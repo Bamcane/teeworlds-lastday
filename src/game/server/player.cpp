@@ -32,6 +32,8 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, bool Bot, CBotData *Bo
 	m_TeamChangeTick = Server()->Tick();
 	SetLanguage(Server()->GetClientLanguage(ClientID));
 
+	m_Emote = EMOTE_NORMAL;
+
 	m_Authed = IServer::AUTHED_NO;
 
 	m_PrevTuningParams = *pGameServer->Tuning();
@@ -447,4 +449,9 @@ void CPlayer::SetMenuPage(int Page)
 	m_MenuPage = Page;
 	m_MenuNeedUpdate = 1;
 	m_MenuCloseTick = MENU_CLOSETICK;
+}
+
+void CPlayer::SetEmote(int Emote)
+{
+	m_Emote = Emote;
 }

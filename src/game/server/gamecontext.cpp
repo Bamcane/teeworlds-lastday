@@ -9,6 +9,7 @@
 #include <game/version.h>
 #include <game/collision.h>
 #include <game/gamecore.h>
+#include <engine/shared/json.h>
 #include "gamecontroller.h"
 
 #include <teeuniverses/components/localization.h>
@@ -963,6 +964,20 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			pPlayer->SetTeam(pMsg->m_Team);
 			pPlayer->m_TeamChangeTick = Server()->Tick();
 		}
+		else if(MsgID == NETMSGTYPE_CL_ISDDNETLEGACY)
+		{
+			IServer::CClientInfo Info;
+			if(Server()->GetClientInfo(ClientID, &Info) && Info.m_GotDDNetVersion)
+			{
+				return;
+			}
+			int DDNetVersion = pUnpacker->GetInt();
+			if(pUnpacker->Error() || DDNetVersion < 0)
+			{
+				DDNetVersion = VERSION_DDRACE;
+			}
+			Server()->SetClientDDNetVersion(ClientID, DDNetVersion);
+		}
 		else if (MsgID == NETMSGTYPE_CL_SETSPECTATORMODE && !m_World.m_Paused)
 		{
 			CNetMsg_Cl_SetSpectatorMode *pMsg = (CNetMsg_Cl_SetSpectatorMode *)pRawMsg;
@@ -1565,6 +1580,38 @@ void CGameContext::ConMenu(IConsole::IResult *pResult, void *pUserData)
 	}
 }
 
+void CGameContext::ConEmote(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	int ClientID = pResult->GetClientID();
+
+	if(ClientID < 0 || ClientID >= MAX_CLIENTS)
+		return;
+
+	CPlayer *pPlayer = pSelf->m_apPlayers[ClientID];
+	if(!pPlayer)
+		return;
+
+	int EmoteType = 0;
+	if(!str_comp(pResult->GetString(0), "angry"))
+		EmoteType = EMOTE_ANGRY;
+	else if(!str_comp(pResult->GetString(0), "blink"))
+		EmoteType = EMOTE_BLINK;
+	else if(!str_comp(pResult->GetString(0), "close"))
+		EmoteType = EMOTE_BLINK;
+	else if(!str_comp(pResult->GetString(0), "happy"))
+		EmoteType = EMOTE_HAPPY;
+	else if(!str_comp(pResult->GetString(0), "pain"))
+		EmoteType = EMOTE_PAIN;
+	else if(!str_comp(pResult->GetString(0), "surprise"))
+		EmoteType = EMOTE_SURPRISE;
+	else if(!str_comp(pResult->GetString(0), "normal"))
+		EmoteType = EMOTE_NORMAL;
+	else return;
+
+	pPlayer->SetEmote(EmoteType);
+}
+
 void CGameContext::MenuInventory(int ClientID, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
@@ -1668,6 +1715,8 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("language", "?s", CFGFLAG_CHAT, ConLanguage, this, "change language");
 
 	Console()->Register("menu", "", CFGFLAG_CHAT, ConMenu, this, "show menu");
+	Console()->Register("emote", "s?i", CFGFLAG_CHAT, ConEmote, this, "change emote");
+
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
 }
 
@@ -1839,4 +1888,46 @@ void CGameContext::CreateBot(int ClientID, CBotData *BotPower)
 	Server()->InitClientBot(ClientID);
 
 	m_apPlayers[ClientID]->TryRespawn();
+}
+
+void CGameContext::OnUpdatePlayerServerInfo(char *aBuf, int BufSize, int ID)
+{
+	if(!m_apPlayers[ID])
+		return;
+
+	char aCSkinName[64];
+
+	CPlayer::CTeeInfo &TeeInfo = m_apPlayers[ID]->m_TeeInfos;
+
+	char aJsonSkin[400];
+	aJsonSkin[0] = '\0';
+
+	// 0.6
+	if(TeeInfo.m_UseCustomColor)
+	{
+		str_format(aJsonSkin, sizeof(aJsonSkin),
+			"\"name\":\"%s\","
+			"\"color_body\":%d,"
+			"\"color_feet\":%d",
+			EscapeJson(aCSkinName, sizeof(aCSkinName), TeeInfo.m_SkinName),
+			TeeInfo.m_ColorBody,
+			TeeInfo.m_ColorFeet);
+	}
+	else
+	{
+		str_format(aJsonSkin, sizeof(aJsonSkin),
+			"\"name\":\"%s\"",
+			EscapeJson(aCSkinName, sizeof(aCSkinName), TeeInfo.m_SkinName));
+	}
+	
+
+	str_format(aBuf, BufSize,
+		",\"skin\":{"
+		"%s"
+		"},"
+		"\"afk\":%s,"
+		"\"team\":%d",
+		aJsonSkin,
+		JsonBool(m_apPlayers[ID]->m_Sit),
+		m_apPlayers[ID]->GetTeam());
 }

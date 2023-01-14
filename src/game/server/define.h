@@ -7,9 +7,6 @@
 
 char* format_int64_with_commas(char commas, int64 n);
 
-const char *GetAmmoName(int WeaponID);
-const char *GetWeaponName(int WeaponID);
-
 enum OptionType
 {
     MENUOPTION_OPTIONS=0,
@@ -26,6 +23,8 @@ enum LastDayWeapons
     LD_WEAPON_GRENADE,
     LD_WEAPON_RIFLE,
     LD_WEAPON_NINJA,
+
+    LD_WEAPON_FREEZE_RIFLE,
 
     NUM_LASTDAY_WEAPONS,
 };

@@ -329,7 +329,7 @@ void CCharacter::FireWeapon()
 	m_AttackTick = Server()->Tick();
 
 	if(m_aWeapons[m_ActiveWeapon].m_Ammo > 0 && !m_pPlayer->m_IsBot) // no ammo unlimited
-		GameServer()->Item()->AddInvItemNum(GetAmmoName(m_ActiveWeapon), -1, GetCID());
+		OnWeaponFire(m_ActiveWeapon);
 
 	if(!m_ReloadTimer)
 		m_ReloadTimer = pWeapon->GetFireDelay() * Server()->TickSpeed() / 1000;
@@ -470,16 +470,50 @@ void CCharacter::HandleInput()
 		m_Input.m_Direction = 0;
 		m_Input.m_Hook = 0;
 	}
+
+	SetEmote(m_pPlayer->GetEmote(), Server()->Tick());
 }
 
 void CCharacter::SyncWeapon()
 {
+	CInventory *pInventory = GameServer()->Item()->GetInventory(GetCID());
+
+	for(int i = 0;i < pInventory->m_Datas.size();i ++)
+	{
+		CItemData *pData = GameServer()->Item()->GetItemData(pInventory->m_Datas[i].m_aName);
+		if(pData)
+		{
+			if(pData->m_WeaponAmmoID != -1)
+				m_aWeapons[pData->m_WeaponAmmoID].m_Ammo = pInventory->m_Datas[i].m_Num;
+			else if(pData->m_WeaponID != -1)
+				m_aWeapons[pData->m_WeaponID].m_Got = pInventory->m_Datas[i].m_Num;
+		}
+	}
+
 	for(int i = 0;i < NUM_LASTDAY_WEAPONS;i ++)
 	{
-		m_aWeapons[i].m_Got = GameServer()->Item()->GetInvItemNum(GetWeaponName(i), GetCID());
-		if(GetAmmoName(i) && GetAmmoName(i)[0])
-			m_aWeapons[i].m_Ammo = GameServer()->Item()->GetInvItemNum(GetAmmoName(i), GetCID());
-		else m_aWeapons[i].m_Ammo = -1;
+		if(!GameServer()->Item()->IsWeaponHaveAmmo(i))
+		{
+			m_aWeapons[i].m_Ammo = -1;
+		}
+	}
+}
+
+void CCharacter::OnWeaponFire(int Weapon)
+{
+	CInventory *pInventory = GameServer()->Item()->GetInventory(GetCID());
+
+	for(int i = 0;i < pInventory->m_Datas.size();i ++)
+	{
+		CItemData *pData = GameServer()->Item()->GetItemData(pInventory->m_Datas[i].m_aName);
+		if(pData)
+		{
+			if(pData->m_WeaponAmmoID == Weapon)
+			{
+				GameServer()->Item()->AddInvItemNum(pData->m_aName, -1, GetCID());
+				break;
+			}
+		}
 	}
 }
 
@@ -489,6 +523,9 @@ void CCharacter::Tick()
 	SyncWeapon();
 
 	DoBotActions();
+
+	if(!m_Alive)
+		return;
 
 	HandleInput();
 
@@ -879,6 +916,11 @@ void CCharacter::DoBotActions()
 	if(!m_Alive)
 		return;
 
+	if(CheckBotInRadius(m_ProximityRadius*2) > 5)
+	{
+		Die(GetCID(), WEAPON_HAMMER);
+		return;
+	}
 	CCharacter *pOldTarget = GameServer()->GetPlayerChar(m_Botinfo.m_Target);
 
 	// Refind target
@@ -1090,6 +1132,28 @@ CCharacter *CCharacter::FindTarget(vec2 Pos, float Radius)
 	}
 
 	return pClosest;
+}
+
+int CCharacter::CheckBotInRadius(float Radius)
+{
+	// Find other players
+	float ClosestRange = Radius*2;
+	int Num = 0;
+
+	CCharacter *p = (CCharacter *)GameServer()->m_World.FindFirst(CGameWorld::ENTTYPE_CHARACTER);
+	for(; p; p = (CCharacter *)p->TypeNext())
+ 	{
+		if(p->GetPlayer() && !p->GetPlayer()->m_IsBot)
+			continue;
+
+		float Len = distance(m_Pos, p->m_Pos);
+		if(Len < p->m_ProximityRadius+Radius)
+		{
+			Num++;
+		}
+	}
+
+	return Num;
 }
 
 bool CCharacter::CheckPos(vec2 CheckPos)

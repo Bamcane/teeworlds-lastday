@@ -1,7 +1,7 @@
 
 #include "item-data.h"
 
-CInventoryData::CInventoryData()
+CMakeData::CMakeData()
 {
 }
 

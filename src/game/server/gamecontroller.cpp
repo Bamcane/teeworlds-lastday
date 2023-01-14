@@ -208,7 +208,7 @@ void CGameController::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->IncreaseHealth(10);
 
 	// give default weapons
-	GameServer()->Item()->SetInvItemNum(GetWeaponName(LD_WEAPON_HAMMER), 1, pChr->GetCID());
+	GameServer()->Item()->SetInvItemNum("hammer", 1, pChr->GetCID());
 }
 
 void CGameController::TogglePause()
@@ -485,7 +485,7 @@ void CGameController::ShowInventory(int ClientID)
 
 	const char *pLanguageCode = pPlayer->GetLanguage();
 
-	CInventoryData *pData = GameServer()->Item()->GetInventory(ClientID);
+	CInventory *pData = GameServer()->Item()->GetInventory(ClientID);
 	std::string Buffer;
 	Buffer.clear();
 
@@ -494,16 +494,16 @@ void CGameController::ShowInventory(int ClientID)
 	Buffer.append("===");
 	Buffer.append("\n");
 	
-	for(int i = 0; i < pData->m_Name.size();i ++)
+	for(int i = 0; i < pData->m_Datas.size();i ++)
 	{
-		Buffer.append(GameServer()->Localize(pLanguageCode, pData->m_Name[i].c_str()));
+		Buffer.append(GameServer()->Localize(pLanguageCode, pData->m_Datas[i].m_aName));
 		Buffer.append(": ");
-		Buffer.append(format_int64_with_commas(',', pData->m_Num[i]));
+		Buffer.append(format_int64_with_commas(',', pData->m_Datas[i].m_Num));
 		Buffer.append("\n");
 	}
 	Buffer.append("\n");
 
-	if(!pData->m_Name.size())
+	if(!pData->m_Datas.size())
 		Buffer.append(GameServer()->Localize(pLanguageCode, "You don't have any things!"));
 	GameServer()->SendMotd(ClientID, Buffer.c_str());
 }

@@ -49,12 +49,20 @@
             "value": "激光枪"
         },
         {
-            "key": "rifle ammo",
+            "key": "laser",
             "value": "激光"
         },
         {
             "key": "ninja",
             "value": "忍者刀"
+        },
+        {
+            "key": "freeze rifle",
+            "value": "冻结激光枪"
+        },
+        {
+            "key": "freeze laser",
+            "value": "冻结激光"
         },
         {
     		"key": "Language successfully switched to English",

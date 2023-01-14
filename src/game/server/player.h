@@ -67,7 +67,7 @@ public:
 	int m_LastKill;
 
 	// TODO: clean this up
-	struct
+	struct CTeeInfo
 	{
 		char m_SkinName[64];
 		int m_UseCustomColor;
@@ -123,16 +123,19 @@ private:
 
 public:
 	CTuningParams* GetNextTuningParams() { return &m_NextTuningParams; };
+	void SetEmote(int Emote);
 
 private:
 	bool m_Menu;
 	int m_MenuPage;
+	int m_Emote;
 public:
 	inline bool GetMenuStatus() const { return m_Menu; }
 	void OpenMenu();
 	void CloseMenu();
 	void SetMenuPage(int Page);
 	int GetMenuPage() const {return m_MenuPage;}
+	int GetEmote() const {return m_Emote;}
 	int m_MenuLine;
 	int m_MenuCloseTick;
 	bool m_MenuNeedUpdate;
