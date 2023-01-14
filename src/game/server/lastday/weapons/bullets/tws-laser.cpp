@@ -31,7 +31,7 @@ bool CTWSLaser::HitCharacter(vec2 From, vec2 To)
 	m_Pos = At;
 	m_Energy = -1;
 	pHit->TakeDamage(vec2(0.f, 0.f), m_Damage, m_Owner, m_Weapon);
-	if(!m_Freeze)
+	if(m_Freeze)
 	{
 		if(pOwnerChar)
 			pHit->Freeze(pOwnerChar->GetPlayer()->GetNextTuningParams()->m_LaserFreezeTime);
@@ -109,7 +109,7 @@ void CTWSLaser::Snap(int SnappingClient)
 	if(NetworkClipped(SnappingClient))
 		return;
 
-	if(m_Freeze && GameServer()->GetClientVersion(SnappingClient) >= VERSION_DDNET_MULTI_LASER)
+	if(GameServer()->GetClientVersion(SnappingClient) >= VERSION_DDNET_MULTI_LASER)
 	{
 		CNetObj_DDNetLaser *pObj = static_cast<CNetObj_DDNetLaser *>(Server()->SnapNewItem(NETOBJTYPE_DDNETLASER, m_ID, sizeof(CNetObj_DDNetLaser)));
 		if(!pObj)
@@ -121,7 +121,7 @@ void CTWSLaser::Snap(int SnappingClient)
 		pObj->m_FromY = (int)m_From.y;
 		pObj->m_StartTick = m_EvalTick;
 		pObj->m_Owner = m_Owner;
-		pObj->m_Type = LASERTYPE_FREEZE;
+		pObj->m_Type = m_Freeze ? LASERTYPE_FREEZE : LASERTYPE_RIFLE;
 	}
 	else
 	{

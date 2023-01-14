@@ -4,10 +4,10 @@
 #include <base/tl/array.h>
 #include <string>
 
-class CInventoryData
+class CMakeData
 {
 public:
-    CInventoryData();
+    CMakeData();
     array<std::string> m_Name;
     array<int> m_Num;
 };
@@ -22,7 +22,7 @@ public:
 	int m_WeaponID;
 	int m_WeaponAmmoID;
     int m_GiveNum;
-    CInventoryData m_Needs;
+    CMakeData m_Needs;
 };
 
 #endif

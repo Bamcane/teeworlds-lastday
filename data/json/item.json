@@ -41,7 +41,7 @@
             "give_num": 6
         },
         {
-            "name": "rifle ammo",
+            "name": "laser",
             "drops": 1,
             "weapon_ammo": 4,
             "need":
@@ -54,13 +54,26 @@
             "give_num": 6
         },
         {
+            "name": "freeze laser",
+            "drops": 1,
+            "weapon_ammo": 6,
+            "need":
+            [
+                {
+                    "name": "metal",
+                    "num": 8
+                }
+            ],
+            "give_num": 6
+        },
+        {
             "name": "hammer",
-            "weapon": 1,
+            "weapon": 0,
             "makeable": 0
         },
         {
             "name": "gun",
-            "weapon": 2,
+            "weapon": 1,
             "need":
             [
                 {
@@ -75,7 +88,7 @@
         },
         {
             "name": "shotgun",
-            "weapon": 3,
+            "weapon": 2,
             "need":
             [
                 {
@@ -90,7 +103,7 @@
         },
         {
             "name": "grenade",
-            "weapon": 4,
+            "weapon": 3,
             "need":
             [
                 {
@@ -109,7 +122,7 @@
         },
         {
             "name": "rifle",
-            "weapon": 5,
+            "weapon": 4,
             "need":
             [
                 {
@@ -128,7 +141,7 @@
         },
         {
             "name": "ninja",
-            "weapon": 6,
+            "weapon": 5,
             "need":
             [
                 {
@@ -142,6 +155,25 @@
                 {
                     "name": "stone",
                     "num": 3
+                }
+            ]
+        },
+        {
+            "name": "freeze rifle",
+            "weapon": 6,
+            "need":
+            [
+                {
+                    "name": "metal",
+                    "num": 14
+                },
+                {
+                    "name": "frame",
+                    "num": 5
+                },
+                {
+                    "name": "stone",
+                    "num": 4
                 }
             ]
         },

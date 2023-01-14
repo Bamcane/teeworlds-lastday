@@ -94,6 +94,7 @@ class CGameContext : public IGameServer
 	static void ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 
 	static void ConMenu(IConsole::IResult *pResult, void *pUserData);
+	static void ConEmote(IConsole::IResult *pResult, void *pUserData);
 
 	static void MenuInventory(int ClientID, void *pUserData);
 	static void MenuItem(int ClientID, void *pUserData);
@@ -231,6 +232,8 @@ public:
 	const char *GameType() override;
 	const char *Version() override;
 	const char *NetVersion() override;
+	
+	void OnUpdatePlayerServerInfo(char *aBuf, int BufSize, int ID) override;
 
 	// MakeItem
 	void MakeItem(int ClientID, const char *pItemName);

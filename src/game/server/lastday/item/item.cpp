@@ -51,7 +51,7 @@ void CItemCore::InitItem()
 
 				if(NeedArray.is_array())
 				{
-					CInventoryData *pNeed = new CInventoryData();
+					CMakeData *pNeed = new CMakeData();
 					for(unsigned j = 0;j < NeedArray.size();j++)
 					{
 						pNeed->m_Name.add(NeedArray[j].value("name", " ").c_str());
@@ -82,18 +82,30 @@ CItemData *CItemCore::GetItemData(const char *Name)
     return 0x0;
 }
 
-CInventoryData *CItemCore::GetInventory(int ClientID)
+CInventory *CItemCore::GetInventory(int ClientID)
 {
 	return &m_aInventories[ClientID];
 }
 
+bool CItemCore::IsWeaponHaveAmmo(int Weapon)
+{
+	for(int i = 0;i < m_aItems.size();i++)
+	{
+		if(m_aItems[i].m_WeaponAmmoID == i)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
 int CItemCore::GetInvItemNum(const char *ItemName, int ClientID)
 {
-	for(int i = 0;i < m_aInventories[ClientID].m_Name.size();i ++)
+	for(int i = 0;i < m_aInventories[ClientID].m_Datas.size();i ++)
 	{
-		if(str_comp(m_aInventories[ClientID].m_Name[i].c_str(), ItemName) == 0)
+		if(str_comp(m_aInventories[ClientID].m_Datas[i].m_aName, ItemName) == 0)
 		{
-			return m_aInventories[ClientID].m_Num[i];
+			return m_aInventories[ClientID].m_Datas[i].m_Num;
 		}
 	}
 	return 0;
@@ -102,11 +114,11 @@ int CItemCore::GetInvItemNum(const char *ItemName, int ClientID)
 void CItemCore::AddInvItemNum(const char *ItemName, int Num, int ClientID)
 {
 	bool Added = false;
-	for(int i = 0;i < m_aInventories[ClientID].m_Name.size();i ++)
+	for(int i = 0;i < m_aInventories[ClientID].m_Datas.size();i ++)
 	{
-		if(str_comp(m_aInventories[ClientID].m_Name[i].c_str(), ItemName) == 0)
+		if(str_comp(m_aInventories[ClientID].m_Datas[i].m_aName, ItemName) == 0)
 		{
-			m_aInventories[ClientID].m_Num[i] += Num;
+			m_aInventories[ClientID].m_Datas[i].m_Num += Num;
 			Added = true;
 			break;
 		}
@@ -114,19 +126,22 @@ void CItemCore::AddInvItemNum(const char *ItemName, int Num, int ClientID)
 
 	if(!Added)
 	{
-		m_aInventories[ClientID].m_Name.add(ItemName);
-		m_aInventories[ClientID].m_Num.add(Num);
+		CInventoryData Data;
+		str_copy(Data.m_aName, ItemName);
+		Data.m_Num = Num;
+
+		m_aInventories[ClientID].m_Datas.add(Data);
 	}
 }
 
 void CItemCore::SetInvItemNum(const char *ItemName, int Num, int ClientID)
 {
 	bool Set = false;
-	for(int i = 0;i < m_aInventories[ClientID].m_Name.size();i ++)
+	for(int i = 0;i < m_aInventories[ClientID].m_Datas.size();i ++)
 	{
-		if(str_comp(m_aInventories[ClientID].m_Name[i].c_str(), ItemName) == 0)
+		if(str_comp(m_aInventories[ClientID].m_Datas[i].m_aName, ItemName) == 0)
 		{
-			m_aInventories[ClientID].m_Num[i] = Num;
+			m_aInventories[ClientID].m_Datas[i].m_Num = Num;
 			Set = true;
 			break;
 		}
@@ -134,13 +149,15 @@ void CItemCore::SetInvItemNum(const char *ItemName, int Num, int ClientID)
 
 	if(!Set)
 	{
-		m_aInventories[ClientID].m_Name.add(ItemName);
-		m_aInventories[ClientID].m_Num.add(Num);
+		CInventoryData Data;
+		str_copy(Data.m_aName, ItemName);
+		Data.m_Num = Num;
+
+		m_aInventories[ClientID].m_Datas.add(Data);
 	}
 }
 
 void CItemCore::ClearInv(int ClientID)
 {
-	m_aInventories[ClientID].m_Name.clear();
-	m_aInventories[ClientID].m_Num.clear();
+	m_aInventories[ClientID].m_Datas.clear();
 }

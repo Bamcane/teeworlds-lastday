@@ -6,6 +6,7 @@
 #include <game/mapitems.h>
 
 #include <engine/external/open-simplex-noise/open-simplex-noise.h>
+#include <engine/external/pnglite/pnglite.h>
 
 #include <base/color.h>
 
@@ -120,6 +121,109 @@ void CMapGen::InitState()
 	m_NumImages = 0;
 	m_NumEnvs = 0;
 	m_lConfigs.clear();
+}
+
+int CMapGen::LoadPNG(CImageInfo *pImg, const char *pFilename)
+{
+	char aCompleteFilename[512];
+	unsigned char *pBuffer;
+	png_t Png; // ignore_convention
+
+	// open file for reading
+	png_init(0,0); // ignore_convention
+
+	IOHANDLE File = m_pStorage->OpenFile(pFilename, IOFLAG_READ, IStorage::TYPE_ALL, aCompleteFilename, sizeof(aCompleteFilename));
+	if(File)
+		io_close(File);
+	else
+	{
+		dbg_msg("game/png", "failed to open file. filename='%s'", pFilename);
+		return 0;
+	}
+
+	int Error = png_open_file(&Png, aCompleteFilename); // ignore_convention
+	if(Error != PNG_NO_ERROR)
+	{
+		dbg_msg("game/png", "failed to open file. filename='%s'", aCompleteFilename);
+		if(Error != PNG_FILE_ERROR)
+			png_close_file(&Png); // ignore_convention
+		return 0;
+	}
+
+	if(Png.depth != 8 || (Png.color_type != PNG_TRUECOLOR && Png.color_type != PNG_TRUECOLOR_ALPHA)) // ignore_convention
+	{
+		dbg_msg("game/png", "invalid format. filename='%s'", aCompleteFilename);
+		png_close_file(&Png); // ignore_convention
+		return 0;
+	}
+
+	pBuffer = (unsigned char *)mem_alloc(Png.width * Png.height * Png.bpp, 1); // ignore_convention
+	png_get_data(&Png, pBuffer); // ignore_convention
+	png_close_file(&Png); // ignore_convention
+
+	pImg->m_Width = Png.width; // ignore_convention
+	pImg->m_Height = Png.height; // ignore_convention
+	if(Png.color_type == PNG_TRUECOLOR) // ignore_convention
+		pImg->m_Format = CImageInfo::FORMAT_RGB;
+	else if(Png.color_type == PNG_TRUECOLOR_ALPHA) // ignore_convention
+		pImg->m_Format = CImageInfo::FORMAT_RGBA;
+	pImg->m_pData = pBuffer;
+	return 1;
+}
+
+void FreePNG(CImageInfo *pImg)
+{
+	mem_free(pImg->m_pData);
+	pImg->m_pData = nullptr;
+}
+
+int CMapGen::AddEmbeddedImage(const char* pImageName, int Width, int Height)
+{
+	CImageInfo img;
+	CImageInfo *pImg = &img;
+
+	char aBuf[512];
+	str_format(aBuf, sizeof(aBuf), "data/mapgen/%s.png", pImageName);
+
+	if (!LoadPNG(pImg, aBuf)) {
+		return -1;
+	}
+
+	CMapItemImage Item;
+	Item.m_Version = 1;
+
+	Item.m_External = 0;
+	Item.m_Width = Width;
+	Item.m_Height = Height;
+	Item.m_ImageName = m_DataFile.AddData(str_length((char*)pImageName)+1, (char*)pImageName);
+
+	Item.m_Width = pImg->m_Width;
+	Item.m_Height = pImg->m_Height;
+
+	if(pImg->m_Format == CImageInfo::FORMAT_RGB)
+	{
+		// Convert to RGBA
+		unsigned char *pDataRGBA = (unsigned char *)malloc((size_t)Item.m_Width * Item.m_Height * 4);
+		unsigned char *pDataRGB = (unsigned char *)pImg->m_pData;
+		for(int i = 0; i < Item.m_Width * Item.m_Height; i++)
+		{
+			pDataRGBA[i * 4] = pDataRGB[i * 3];
+			pDataRGBA[i * 4 + 1] = pDataRGB[i * 3 + 1];
+			pDataRGBA[i * 4 + 2] = pDataRGB[i * 3 + 2];
+			pDataRGBA[i * 4 + 3] = 255;
+		}
+		Item.m_ImageData = m_DataFile.AddData(Item.m_Width * Item.m_Height * 4, pDataRGBA);
+		free(pDataRGBA);
+	}
+	else
+	{
+		Item.m_ImageData = m_DataFile.AddData(Item.m_Width * Item.m_Height * 4, pImg->m_pData);
+	}
+	m_DataFile.AddItem(MAPITEMTYPE_IMAGE, m_NumImages++, sizeof(Item), &Item);
+
+	FreePNG(pImg);
+
+	return m_NumImages-1;
 }
 
 int CMapGen::AddExternalImage(const char* pImageName, int Width, int Height)
@@ -644,8 +748,8 @@ void CMapGen::GenerateHookableLayer()
 	Item.m_ClipH = 0;
 	StrToInts(Item.m_aName, sizeof(Item.m_aName)/sizeof(int), "Tiles");
 
-	int ImageHookable = AddExternalImage("jungle_main", 1024, 1024);
-	int RuleHookable = LoadRules("jungle_main");
+	int ImageHookable = AddEmbeddedImage("grass_main_0.7", 1024, 1024);
+	int RuleHookable = LoadRules("grass_main_0.7");
 
 	m_pHookableTiles = new CTile[Width*Height];
 	for(int x = 0;x < Width;x ++)

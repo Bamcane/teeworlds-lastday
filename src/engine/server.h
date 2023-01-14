@@ -208,6 +208,8 @@ public:
 
 	virtual void OnSetAuthed(int ClientID, int Level) = 0;
 	virtual class CLayers *Layers() = 0;
+	
+	virtual void OnUpdatePlayerServerInfo(char *aBuf, int BufSize, int ID) = 0;
 };
 
 extern IGameServer *CreateGameServer();

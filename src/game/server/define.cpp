@@ -38,29 +38,3 @@ char* format_int64_with_commas(char commas, int64 n)
 	_formatted_number[_formatted_number_length] = '\0';
 	return _formatted_number;
 }
-
-const char *GetAmmoName(int WeaponID)
-{
-	switch (WeaponID)
-	{
-		case LD_WEAPON_GUN: return "gun ammo";
-		case LD_WEAPON_SHOTGUN: return "shotgun ammo";
-		case LD_WEAPON_GRENADE: return "grenade ammo";
-		case LD_WEAPON_RIFLE: return "rifle ammo";
-		default: return "";
-	}
-}
-
-const char *GetWeaponName(int WeaponID)
-{
-	switch (WeaponID)
-	{
-		case LD_WEAPON_HAMMER: return "hammer";
-		case LD_WEAPON_GUN: return "gun";
-		case LD_WEAPON_SHOTGUN: return "shotgun";
-		case LD_WEAPON_GRENADE: return "grenade";
-		case LD_WEAPON_RIFLE: return "rifle";
-		case LD_WEAPON_NINJA: return "ninja";
-		default: return "";
-	}
-}

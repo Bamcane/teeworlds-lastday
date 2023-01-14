@@ -6,6 +6,7 @@
 #include <game/server/entity.h>
 #include <game/generated/server_data.h>
 #include <game/generated/protocol.h>
+#include <game/server/define.h>
 
 #include <game/gamecore.h>
 
@@ -45,6 +46,7 @@ public:
 	void HandleInput();
 
 	void SyncWeapon();
+	void OnWeaponFire(int Weapon);
 
 	void OnPredictedInput(CNetObj_PlayerInput *pNewInput);
 	void OnDirectInput(CNetObj_PlayerInput *pNewInput);
@@ -82,7 +84,7 @@ private:
 		int m_Ammo;
 		bool m_Got;
 
-	} m_aWeapons[NUM_WEAPONS];
+	} m_aWeapons[NUM_LASTDAY_WEAPONS];
 
 	int m_ActiveWeapon;
 	int m_LastWeapon;
@@ -173,6 +175,7 @@ public:
 	} m_Botinfo;
 	void DoBotActions();
 	CCharacter *FindTarget(vec2 Pos, float Radius);
+	int CheckBotInRadius(float Radius);
 	bool CheckPos(vec2 CheckPos);
 /*** Bot End ***/
 
