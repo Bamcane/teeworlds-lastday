@@ -690,8 +690,8 @@ void CServer::DoSnapshot()
 		m_DemoRecorder.RecordSnapshot(Tick(), aData, SnapshotSize);
 	}
 
-	// create snapshots for all clients
-	for(int i = 0; i < MAX_CLIENTS; i++)
+	// create snapshots for all players
+	for(int i = 0; i < MAX_PLAYERS; i++)
 	{
 		// client must be ingame to recive snapshots
 		if(m_aClients[i].m_State != CClient::STATE_INGAME)

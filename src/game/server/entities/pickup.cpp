@@ -83,7 +83,7 @@ void CPickup::Tick()
 
 	// Check if a player intersected us
 	CCharacter *pChr = GameServer()->m_World.ClosestCharacter(m_Pos, 32.0f, 0);
-	if(pChr && pChr->IsAlive() && !pChr->GetPlayer()->m_IsBot)
+	if(pChr && pChr->IsAlive() && pChr->GetPlayer() && !pChr->GetPlayer()->m_IsBot)
 	{
 		GameServer()->Item()->AddInvItemNum(m_Name, m_Num, pChr->GetCID());
 		GameServer()->SendChatTarget_Locazition(pChr->GetCID(), _("You got %d %s"),

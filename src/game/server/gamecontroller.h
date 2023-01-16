@@ -144,9 +144,8 @@ public:
 	void InitBotData();
 	CBotData *RandomBotData();
 	array<CBotData> m_BotDatas;
+	void CreatePickup(vec2 Pos, vec2 Dir, CBotData BotData);
 /** Bot End **/
-
-	void CreateZombiePickup(vec2 Pos, vec2 Dir, int DropNum);
 
 	WeaponInit WeaponIniter;
 };

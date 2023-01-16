@@ -16,6 +16,10 @@
             "key": "frame",
             "value": "框架"
         },
+        {
+            "key": "gold blood",
+            "value": "金血"
+        },
         {  
             "key": "hammer",
             "value": "锤子"
@@ -63,6 +67,30 @@
         {
             "key": "freeze laser",
             "value": "冻结激光"
+        },
+        {
+            "key": "Coala",
+            "value": "科拉"
+        },
+        {
+            "key": "Carnome",
+            "value": "卡诺姆"
+        },
+        {
+            "key": "Snipan",
+            "value": "斯奈潘"
+        },
+        {
+            "key": "Moker",
+            "value": "魔克"
+        },
+        {
+            "key": "Bammer",
+            "value": "巴默"
+        },
+        {
+            "key": "Rast",
+            "value": "瑞斯特"
         },
         {
     		"key": "Language successfully switched to English",

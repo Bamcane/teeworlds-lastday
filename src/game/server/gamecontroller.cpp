@@ -205,7 +205,7 @@ int CGameController::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *
 void CGameController::OnCharacterSpawn(class CCharacter *pChr)
 {
 	// default health
-	pChr->IncreaseHealth(10);
+	pChr->IncreaseHealth(-1);
 
 	// give default weapons
 	GameServer()->Item()->SetInvItemNum("hammer", 1, pChr->GetCID());
@@ -539,17 +539,31 @@ void CGameController::InitBotData()
 		for(unsigned i = 0; i < BotArray.size(); ++i)
 		{
 			CBotData *pData = new CBotData();
+			str_copy(pData->m_aName, BotArray[i].value("name", "null").c_str());
 			str_copy(pData->m_SkinName, BotArray[i].value("skin", "default").c_str());
 			pData->m_BodyColor = BotArray[i].value("body_color", -1);
 			pData->m_FeetColor = BotArray[i].value("feet_color", -1);
 			pData->m_AttackProba = BotArray[i].value("attack_proba", 20);
 			pData->m_SpawnProba = BotArray[i].value("spawn_proba", 100);
-			pData->m_DropProba = BotArray[i].value("drop_proba", 80);
-			pData->m_DropNum = BotArray[i].value("drop_num", 1);
 			pData->m_TeamDamage = BotArray[i].value("teamdamage", 0);
 			pData->m_Gun = BotArray[i].value("gun", 0);
 			pData->m_Hammer = BotArray[i].value("hammer", 0);
 			pData->m_Hook = BotArray[i].value("hook", 0);
+			
+			json DropsArray = BotArray[i]["drops"];
+			if(DropsArray.is_array())
+			{
+				for(unsigned j = 0;j < DropsArray.size();j++)
+				{
+					CBotDropData *pDropData = new CBotDropData();
+					str_copy(pDropData->m_ItemName, DropsArray[j].value("name", " ").c_str());
+					pDropData->m_DropProba = DropsArray[j].value("proba", 0);
+					pDropData->m_MinNum = DropsArray[j].value("minnum", 0);
+					pDropData->m_MaxNum = DropsArray[j].value("maxnum", 0);
+					pData->m_Drops.add(*pDropData);
+				}
+			}
+
 			m_BotDatas.add(*pData);
 		}
 	}
@@ -568,13 +582,14 @@ CBotData *CGameController::RandomBotData()
 	return pData;
 }	
 
-void CGameController::CreateZombiePickup(vec2 Pos, vec2 Dir, int DropNum)
+void CGameController::CreatePickup(vec2 Pos, vec2 Dir, CBotData BotData)
 {
-	const char *PickupName;
-	int PickupRandom = random_int(0, GameServer()->Item()->m_aDrops.size()-1);
-	PickupName = GameServer()->Item()->m_aDrops[PickupRandom]->m_aName;
-	
-	int PickupNum = max(1, random_int(-1, 1) + DropNum);
-
-	new CPickup(&GameServer()->m_World, Pos, Dir, PickupName, PickupNum);
+	for(int i = 0;i < BotData.m_Drops.size();i++)
+	{
+		if(random_int(1, 100) <= BotData.m_Drops[i].m_DropProba)
+		{
+			int PickupNum = random_int(BotData.m_Drops[i].m_MinNum, BotData.m_Drops[i].m_MaxNum);
+			new CPickup(&GameServer()->m_World, Pos, Dir, BotData.m_Drops[i].m_ItemName, PickupNum);
+		}
+	}
 }

@@ -20,8 +20,6 @@ class CItemCore
 public:
     CItemCore(CGameContext *pGameServer);
     class CMakeCore *Make() const {return m_pMake;}
-    
-    array<CItemData*> m_aDrops;
 
     CItemData *GetItemData(const char* Name);
     CInventory *GetInventory(int ClientID);

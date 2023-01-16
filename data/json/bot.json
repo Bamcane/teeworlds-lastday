@@ -2,30 +2,53 @@
     "json":
     [
         {
+            "name": "Coala",
             "skin": "coala",
             "attack_proba": 4,
             "spawn_proba": 60,
-            "drop_proba": 50,
-            "drop_num": 2,
             "teamdamage": 1,
             "hammer": 1,
             "gun": 0,
-            "hook": 0
+            "hook": 0,
+            "drops":
+            [
+                {
+                    "name": "wood",
+                    "proba": 30,
+                    "minnum": 1,
+                    "maxnum": 2
+                },
+                {
+                    "name": "stone",
+                    "proba": 20,
+                    "minnum": 1,
+                    "maxnum": 2
+                }
+            ]
         },
         {
+            "name": "Carnome",
             "skin": "cammo",
             "body_color": 0,
             "feet_color": 0,
             "attack_proba": 0,
             "spawn_proba": 10,
-            "drop_proba": 20,
-            "drop_num": 1,
             "teamdamage": 0,
             "hammer": 0,
             "gun": 0,
-            "hook": 0
+            "hook": 0,
+            "drops":
+            [
+                {
+                    "name": "gold blood",
+                    "proba": 2,
+                    "minnum": 1,
+                    "maxnum": 1
+                }
+            ]
         },
         {
+            "name": "Snipan",
             "skin": "warpaint",
             "attack_proba": 8,
             "spawn_proba": 25,
@@ -34,9 +57,25 @@
             "teamdamage": 0,
             "hammer": 1,
             "gun": 0,
-            "hook": 1
+            "hook": 1,
+            "drops":
+            [
+                {
+                    "name": "wood",
+                    "proba": 20,
+                    "minnum": 1,
+                    "maxnum": 2
+                },
+                {
+                    "name": "metal",
+                    "proba": 40,
+                    "minnum": 2,
+                    "maxnum": 3
+                }
+            ]
         },
         {
+            "name": "Moker",
             "skin": "cammostripes",
             "attack_proba": 12,
             "spawn_proba": 20,
@@ -45,9 +84,25 @@
             "teamdamage": 0,
             "hammer": 0,
             "gun": 1,
-            "hook": 1
+            "hook": 1,
+            "drops":
+            [
+                {
+                    "name": "gun ammo",
+                    "proba": 20,
+                    "minnum": 4,
+                    "maxnum": 8
+                },
+                {
+                    "name": "metal",
+                    "proba": 50,
+                    "minnum": 3,
+                    "maxnum": 4
+                }
+            ]
         },
         {
+            "name": "Bammer",
             "skin": "twintri",
             "attack_proba": 16,
             "spawn_proba": 16,
@@ -56,9 +111,25 @@
             "teamdamage": 1,
             "hammer": 1,
             "gun": 0,
-            "hook": 1
+            "hook": 1,
+            "drops":
+            [
+                {
+                    "name": "stone",
+                    "proba": 50,
+                    "minnum": 4,
+                    "maxnum": 6
+                },
+                {
+                    "name": "metal",
+                    "proba": 50,
+                    "minnum": 3,
+                    "maxnum": 4
+                }
+            ]
         },
         {
+            "name": "Rast",
             "skin": "random",
             "attack_proba": 20,
             "spawn_proba": 12,
@@ -67,7 +138,34 @@
             "teamdamage": 0,
             "hammer": 1,
             "gun": 1,
-            "hook": 1
+            "hook": 1,
+            "drops":
+            [
+                {
+                    "name": "wood",
+                    "proba": 90,
+                    "minnum": 2,
+                    "maxnum": 3
+                },
+                {
+                    "name": "metal",
+                    "proba": 30,
+                    "minnum": 3,
+                    "maxnum": 4
+                },
+                {
+                    "name": "stone",
+                    "proba": 20,
+                    "minnum": 2,
+                    "maxnum": 3
+                },
+                {
+                    "name": "gun ammo",
+                    "proba": 10,
+                    "minnum": 4,
+                    "maxnum": 8
+                }
+            ]
         }
     ]
 }

@@ -1649,6 +1649,9 @@ void CGameContext::SetClientLanguage(int ClientID, const char *pLanguage)
 
 const char* CGameContext::Localize(const char *pLanguageCode, const char* pText) const
 {
+	if(str_comp(pLanguageCode, "en") == 0)
+		return pText;
+
 	return Server()->Localization()->Localize(pLanguageCode, pText);
 }
 

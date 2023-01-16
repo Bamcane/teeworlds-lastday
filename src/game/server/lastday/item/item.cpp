@@ -40,10 +40,10 @@ void CItemCore::InitItem()
 			CItemData *pData = new CItemData();
 			str_copy(pData->m_aName, ItemArray[i].value("name", " ").c_str());
 			pData->m_IsMakeable = ItemArray[i].value("makeable", 1);
-			pData->m_IsDrops = ItemArray[i].value("drops", 0);
 			pData->m_WeaponAmmoID = ItemArray[i].value("weapon_ammo", -1);
 			pData->m_WeaponID = ItemArray[i].value("weapon", -1);
 			pData->m_GiveNum = ItemArray[i].value("give_num", 1);
+			pData->m_Health = ItemArray[i].value("health", 0);
 			
 			if(pData->m_IsMakeable)
 			{
@@ -63,11 +63,6 @@ void CItemCore::InitItem()
 			}
 
 			m_aItems.add(*pData);
-
-			if(pData->m_IsDrops)
-			{
-				m_aDrops.add(pData);
-			}
 		}
 	}
 }
