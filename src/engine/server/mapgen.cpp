@@ -402,7 +402,7 @@ void CMapGen::GenerateGameLayer()
 		dbg_msg("mapgen", "%d Area left", AreaList.size());
 		int tempdis = Width;
 		CAirTile Start, End;
-		End = AreaList[1]->m_Tiles[random_int(0, AreaList[1]->m_Tiles.size()-1)];
+		End = AreaList[1]->m_Tiles[AreaList[1]->m_Tiles.size() > 1 ? random_int(0, AreaList[1]->m_Tiles.size()-1) : 0];
 		for(int i = 0;i < AreaList[0]->m_Tiles.size();i ++)
 		{
 			CAirTile pTile = AreaList[0]->m_Tiles[i];
