@@ -184,6 +184,8 @@ public:
 
 	CDemoRecorder m_DemoRecorder;
 
+	bool m_Active;
+
 	CServer();
 	~CServer();
 
@@ -307,6 +309,7 @@ public:
 	void SetClientLanguage(int ClientID, const char* pLanguage) override;
 	int* GetIdMap(int ClientID) override;
 	void RegenerateMap() override;
+	bool IsActive() override;
 };
 
 #endif

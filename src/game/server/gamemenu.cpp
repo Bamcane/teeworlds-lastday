@@ -219,7 +219,7 @@ void CMenu::UseOptions(int ClientID)
 
     if(OptionID == -1 || OptionID >= m_apOptions.size())
     {
-        dbg_msg("menu", "A player use invalid option %s Page: %s", pPlayer->m_SelectOption, std::to_string(pPlayer->GetMenuPage()).c_str());
+        dbg_msg("menu", "A player use invalid option %s Page: %d", pPlayer->m_SelectOption, pPlayer->GetMenuPage());
         return;
     }
     

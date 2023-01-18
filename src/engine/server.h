@@ -175,6 +175,8 @@ public:
 	
 	virtual void ExpireServerInfo() = 0;
 	virtual void RegenerateMap() = 0;
+
+	virtual bool IsActive() = 0;
 };
 
 class IGameServer : public IInterface

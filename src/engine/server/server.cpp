@@ -319,6 +319,8 @@ CServer::CServer() : m_DemoRecorder(&m_SnapshotDelta)
 	m_pRegister = nullptr;
 	m_MapLock = lock_create();
 
+	m_Active = false;
+
 	Init();
 }
 
@@ -1981,7 +1983,7 @@ int CServer::Run()
 
 	// start game
 	{
-		bool NonActive = false;
+		m_Active = true;
 		bool PacketWaiting = false;
 
 		m_GameStartTime = time_get();
@@ -1989,7 +1991,7 @@ int CServer::Run()
 		UpdateServerInfo();
 		while(m_RunServer)
 		{
-			if(NonActive)
+			if(!m_Active)
 				PumpNetwork(PacketWaiting);
 
 			set_new_tick();
@@ -2070,22 +2072,22 @@ int CServer::Run()
 			if(m_ServerInfoNeedsUpdate)
 				UpdateServerInfo();
 
-			if(!NonActive)
+			if(m_Active)
 				PumpNetwork(PacketWaiting);
 
-			NonActive = true;
+			m_Active = false;
 
-			for(auto &Client : m_aClients)
+			for(int i = 0;i < MAX_PLAYERS;i ++)
 			{
-				if(Client.m_State != CClient::STATE_EMPTY)
+				if(m_aClients[i].m_State != CClient::STATE_EMPTY)
 				{
-					NonActive = false;
+					m_Active = true;
 					break;
 				}
 			}
 
 			// wait for incoming data
-			if(NonActive)
+			if(!m_Active)
 			{
 				if(g_Config.m_SvReloadWhenEmpty == 1)
 				{
@@ -2468,4 +2470,9 @@ void CServer::InitClientBot(int ClientID)
 	m_aClients[ClientID].m_Score = 0;
 
 	SendConnectionReady(ClientID);
+}
+
+bool CServer::IsActive()
+{
+	return m_Active;
 }

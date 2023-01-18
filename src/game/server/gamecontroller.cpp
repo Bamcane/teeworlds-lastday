@@ -18,6 +18,8 @@
 
 using json = nlohmann::json;
 
+static LOCK BotDataLock = 0;
+
 CGameController::CGameController(class CGameContext *pGameServer)
 {
 	m_pGameServer = pGameServer;
@@ -37,6 +39,10 @@ CGameController::CGameController(class CGameContext *pGameServer)
 	m_ForceBalanced = false;
 	
 	m_SpawnPoints.clear();
+
+	BotDataLock = lock_create();
+
+	m_BotDataInit = false;
 	
 	WeaponIniter.InitWeapons(pGameServer);
 
@@ -283,7 +289,7 @@ void CGameController::Tick()
 
 	if(m_GameOverTick == -1)
 	{
-		if(GameServer()->GetBotNum() < MAX_BOTS)
+		if(GameServer()->GetBotNum() < MAX_BOTS && m_BotDataInit)
 			OnCreateBot();
 	}
 
@@ -294,16 +300,9 @@ void CGameController::Tick()
 	// check for inactive players
 	if(g_Config.m_SvInactiveKickTime > 0)
 	{
-		for(int i = 0; i < MAX_CLIENTS; ++i)
+		for(int i = 0; i < MAX_PLAYERS; ++i)
 		{
-		#ifdef CONF_DEBUG
-			if(g_Config.m_DbgDummies)
-			{
-				if(i >= MAX_CLIENTS-g_Config.m_DbgDummies)
-					break;
-			}
-		#endif
-			if(GameServer()->m_apPlayers[i] && !GameServer()->m_apPlayers[i]->m_IsBot && GameServer()->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS && !Server()->IsAuthed(i))
+			if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS && !Server()->IsAuthed(i))
 			{
 				if(Server()->Tick() > GameServer()->m_apPlayers[i]->m_LastActionTick+g_Config.m_SvInactiveKickTime*Server()->TickSpeed()*60)
 				{
@@ -518,8 +517,10 @@ void CGameController::OnCreateBot()
 	}
 }
 
-void CGameController::InitBotData()
+static void InitBotDataThread(void *pUser)
 {
+	lock_wait(BotDataLock);
+	CGameController *pController = (CGameController *) pUser;
 	// read file data into buffer
 	const char *pFilename = "./data/json/bot.json";
 	std::ifstream File(pFilename);
@@ -527,6 +528,7 @@ void CGameController::InitBotData()
 	if(!File.is_open())
 	{
 		dbg_msg("Bot", "can't open 'data/json/bot.json'");
+		lock_unlock(BotDataLock);
 		return;
 	}
 
@@ -564,9 +566,17 @@ void CGameController::InitBotData()
 				}
 			}
 
-			m_BotDatas.add(*pData);
+			pController->m_BotDatas.add(*pData);
 		}
 	}
+	pController->m_BotDataInit = true;
+	lock_unlock(BotDataLock);
+}
+
+void CGameController::InitBotData()
+{
+	void *thread = thread_init(InitBotDataThread, this);
+	thread_detach(thread);
 }
 
 CBotData *CGameController::RandomBotData()

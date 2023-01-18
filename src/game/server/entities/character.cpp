@@ -544,7 +544,8 @@ void CCharacter::Tick()
 	SyncWeapon();
 	SyncHealth();
 
-	DoBotActions();
+	if(Server()->IsActive())
+		DoBotActions();
 
 	if(!m_Alive)
 		return;
