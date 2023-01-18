@@ -249,7 +249,7 @@ static void UpdateItem(void *pUser)
 				result Result(Work.exec(Buf));
 				if(Result.size())
 				{
-					str_format(Buf, sizeof(Buf), "UPDATE ld_PlayerItem SET ItemNum=%d WHERE ID='%d;", 
+					str_format(Buf, sizeof(Buf), "UPDATE ld_PlayerItem SET ItemNum=%d WHERE ID='%d';", 
 						pData->Num, Result.begin()["ID"].as<int>());
 					
 					Work.exec(Buf);
