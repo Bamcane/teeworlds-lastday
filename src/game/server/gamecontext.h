@@ -75,7 +75,6 @@ class CGameContext : public IGameServer
 
 	static void ConsoleOutputCallback_Chat(const char *pLine, void *pUser);
 
-	static void ConLanguage(IConsole::IResult *pResult, void *pUserData);
 	static void ConAbout(IConsole::IResult *pResult, void *pUserData);
 	static void ConTuneParam(IConsole::IResult *pResult, void *pUserData);
 	static void ConTuneReset(IConsole::IResult *pResult, void *pUserData);
@@ -104,6 +103,7 @@ class CGameContext : public IGameServer
 	static void MenuInventory(int ClientID, void *pUserData);
 	static void MenuItem(int ClientID, void *pUserData);
 	static void MenuSit(int ClientID, void *pUserData);
+	static void MenuLanguage(int ClientID, void *pUserData);
 
 
 	CGameContext(int Resetting);
@@ -249,6 +249,9 @@ public:
 	void OnBotDead(int ClientID);
 	void CreateBot(int ClientID, CBotData *BotPower);
 	//Bot END
+	
+	// pLanguageName isn't file name
+	void SetPlayerLanguage(int ClientID, const char *pLanguageName);
 };
 
 #endif

@@ -265,6 +265,10 @@
             "value": "坐下"
         },
         {
+            "key": "Switch Language",
+            "value": "切换语言"
+        },
+        {
             "key": "Back",
             "value": "返回"
         },

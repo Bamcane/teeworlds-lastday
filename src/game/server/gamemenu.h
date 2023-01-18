@@ -22,6 +22,7 @@ public:
 	
     void Register(const char *pName, int Pages, MenuCallback pfnFunc, void *pUser, bool CloseMenu);
 	void RegisterMake(const char *pName);
+	void RegisterLanguage(const char *pName);
 
     void ShowMenu(int ClientID, int Line);
     void UseOptions(int ClientID);

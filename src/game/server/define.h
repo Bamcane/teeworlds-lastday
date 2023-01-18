@@ -13,6 +13,7 @@ enum OptionType
 {
     MENUOPTION_OPTIONS=0,
     MENUOPTION_ITEMS,
+    MENUOPTION_LANGUAGE,
 
     NUM_MENUOPTIONS,
 };
@@ -36,5 +37,6 @@ enum MenuPages
     MENUPAGE_MAIN=0,
     MENUPAGE_NOTMAIN,
     MENUPAGE_ITEM,
+    MENUPAGE_LANGUAGE,
 };
 #endif

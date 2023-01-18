@@ -79,6 +79,20 @@ void CMenu::RegisterMake(const char *pName)
     m_apOptions.add(pOption);
 }
 
+void CMenu::RegisterLanguage(const char *pName)
+{
+	COptions *pOption = new(mem_alloc(sizeof(COptions), sizeof(void*))) COptions;
+
+    pOption->m_OptionType = MENUOPTION_LANGUAGE;
+	pOption->m_pfnCallback = 0;
+    pOption->m_pUserData = GameServer();
+	pOption->m_pName = pName;
+	pOption->m_Page = MENUPAGE_LANGUAGE;
+    pOption->m_CloseMenu = 0;
+
+    m_apOptions.add(pOption);
+}
+
 void CMenu::ShowMenu(int ClientID, int Line)
 {
     CPlayer *pPlayer = GameServer()->m_apPlayers[ClientID];
@@ -235,6 +249,8 @@ void CMenu::UseOptions(int ClientID)
         m_apOptions[OptionID]->m_pfnCallback(ClientID, m_apOptions[OptionID]->m_pUserData);
     else if(m_apOptions[OptionID]->GetOptionType() == MENUOPTION_ITEMS)
         GameServer()->MakeItem(ClientID, m_apOptions[OptionID]->m_pName);
+    else if(m_apOptions[OptionID]->GetOptionType() == MENUOPTION_LANGUAGE)
+        GameServer()->SetPlayerLanguage(ClientID, m_apOptions[OptionID]->m_pName);
 }
 
 void CMenu::AddMenuChat(int ClientID, const char *pChat)
