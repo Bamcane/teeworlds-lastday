@@ -208,7 +208,7 @@ void CGameController::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->IncreaseHealth(-1);
 
 	// give default weapons
-	GameServer()->Item()->SetInvItemNum("hammer", 1, pChr->GetCID());
+	GameServer()->Item()->SetInvItemNum("hammer", 1, pChr->GetCID(), 0);
 }
 
 void CGameController::TogglePause()
@@ -589,7 +589,9 @@ void CGameController::CreatePickup(vec2 Pos, vec2 Dir, CBotData BotData)
 		if(random_int(1, 100) <= BotData.m_Drops[i].m_DropProba)
 		{
 			int PickupNum = random_int(BotData.m_Drops[i].m_MinNum, BotData.m_Drops[i].m_MaxNum);
-			new CPickup(&GameServer()->m_World, Pos, Dir, BotData.m_Drops[i].m_ItemName, PickupNum);
+			const char *pName = BotData.m_Drops[i].m_ItemName;
+			dbg_msg(pName, "%d:%d", i, PickupNum);
+			new CPickup(&GameServer()->m_World, Pos, Dir, pName, PickupNum);
 		}
 	}
 }

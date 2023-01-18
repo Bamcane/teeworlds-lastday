@@ -189,14 +189,7 @@
         {
             "name": "gold blood",
             "health": 2,
-            "need": 
-            [
-                {
-                    "name": "wood",
-                    "num": 0
-                }
-            ],
-            "makeable": 1
+            "makeable": 0
         },
         {
             "name": "metal",

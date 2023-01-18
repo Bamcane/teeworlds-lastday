@@ -45,6 +45,8 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, bool Bot, CBotData *Bo
 	    idMap[i] = -1;
 	}
 	idMap[0] = ClientID;
+
+	m_UserID = 0;
 }
 
 CPlayer::~CPlayer()
@@ -459,4 +461,9 @@ void CPlayer::SetMenuPage(int Page)
 void CPlayer::SetEmote(int Emote)
 {
 	m_Emote = Emote;
+}
+
+void CPlayer::Login(int UserID)
+{
+	m_UserID = UserID;
 }

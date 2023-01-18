@@ -25,9 +25,9 @@ public:
     CInventory *GetInventory(int ClientID);
     bool IsWeaponHaveAmmo(int Weapon);
     int GetInvItemNum(const char *ItemName, int ClientID);
-    void AddInvItemNum(const char *ItemName, int Num, int ClientID);
-    void SetInvItemNum(const char *ItemName, int Num, int ClientID);
-    void ClearInv(int ClientID);
+    void AddInvItemNum(const char *ItemName, int Num, int ClientID, bool Database = true);
+    void SetInvItemNum(const char *ItemName, int Num, int ClientID, bool Database = true);
+    void ClearInv(int ClientID, bool Database = true);
 };
 
 #endif

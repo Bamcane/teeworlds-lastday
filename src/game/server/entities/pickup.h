@@ -21,7 +21,7 @@ public:
 private:
 	vec2 m_Direction;
 	vec2 m_StartPos;
-	const char *m_Name;
+	char m_aName[128];
 	int m_Num;
 	int m_StartTick;
 };

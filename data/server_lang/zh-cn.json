@@ -323,6 +323,55 @@
         {
             "key": "You don't have any things!",
             "value": "你没有任何东西!" 
+        },
+        {
+            "key": "Register failed!Please ask your server hoster!",
+            "value": "注册失败!请询问服务器服主!"
+        },
+        {
+            "key": "Login failed!Please ask your server hoster!",
+            "value": "登陆失败!请询问服务器服主!"
+        },
+        {
+            "key": "You're register now!",
+            "value": "你现在注册了!"
+        },
+        {
+            "key": "You're login now!",
+            "value": "你现在登陆了!"
+        },
+        {
+            "key": "This account already exists!",
+            "value": "账号已存在!"
+        },
+        {
+            "key": "This account doesn't exists!",
+            "value": "帐号不存在!"
+        },
+        {
+            "key": "Wrong password!",
+            "value": "错误的密码!"
+        },
+        {
+            "key": "Wrong player nickname!",
+            "value": "错误的玩家昵称!"  
+        },
+        {
+            "key": "Use /register <username> <password>",
+            "value": "使用/register <用户名> <密码> 注册"
+        },
+        {
+            "key": "Use /login <username> <password>",
+            "value": "使用/login <用户名> <密码> 登陆"
+        },
+        {
+            "key": "The length of the <Username> should be between %d-%d",
+            "value": "<用户名>的长度应在%d-%d之间"
+        },
+        {
+            "key": "The length of the <Password> should be between %d-%d",
+            "value": "<密码>的长度应在%d-%d之间"
         }
+
     ]
 }

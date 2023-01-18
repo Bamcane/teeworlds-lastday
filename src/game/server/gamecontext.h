@@ -32,6 +32,7 @@ typedef unsigned __int64 uint64_t;
 
 #include "gamemenu.h"
 #include "lastday/item/item.h"
+#include "lastday/accounts/postgresql.h"
 /*
 	Tick
 		Game Context (CGameContext::tick)
@@ -70,6 +71,7 @@ class CGameContext : public IGameServer
 	CTuningParams m_Tuning;
 	CMenu *m_pMenu;
 	CItemCore *m_pItem;
+	CPostgresql *m_pPostgresql;
 
 	static void ConsoleOutputCallback_Chat(const char *pLine, void *pUser);
 
@@ -96,6 +98,9 @@ class CGameContext : public IGameServer
 	static void ConMenu(IConsole::IResult *pResult, void *pUserData);
 	static void ConEmote(IConsole::IResult *pResult, void *pUserData);
 
+	static void ConRegister(IConsole::IResult *pResult, void *pUserData);
+	static void ConLogin(IConsole::IResult *pResult, void *pUserData);
+
 	static void MenuInventory(int ClientID, void *pUserData);
 	static void MenuItem(int ClientID, void *pUserData);
 	static void MenuSit(int ClientID, void *pUserData);
@@ -117,6 +122,7 @@ public:
 	CCollision *Collision() { return &m_Collision; }
 	CTuningParams *Tuning() { return &m_Tuning; }
 	CMenu *Menu() { return m_pMenu; }
+	CPostgresql *Postgresql() { return m_pPostgresql; }
 	class CItemCore *Item() { return m_pItem; }
 	class CLayers *Layers() override { return &m_Layers; }
 

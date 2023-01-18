@@ -480,6 +480,14 @@ void CCharacter::SyncWeapon()
 {
 	CInventory *pInventory = GameServer()->Item()->GetInventory(GetCID());
 
+	for(int i = 0;i < NUM_LASTDAY_WEAPONS;i ++)
+	{
+		if(!GameServer()->Item()->IsWeaponHaveAmmo(i))
+		{
+			m_aWeapons[i].m_Ammo = -1;
+		}else m_aWeapons[i].m_Ammo = 0;
+	}
+
 	for(int i = 0;i < pInventory->m_Datas.size();i ++)
 	{
 		CItemData *pData = GameServer()->Item()->GetItemData(pInventory->m_Datas[i].m_aName);
@@ -489,14 +497,6 @@ void CCharacter::SyncWeapon()
 				m_aWeapons[pData->m_WeaponAmmoID].m_Ammo = pInventory->m_Datas[i].m_Num;
 			else if(pData->m_WeaponID != -1)
 				m_aWeapons[pData->m_WeaponID].m_Got = pInventory->m_Datas[i].m_Num;
-		}
-	}
-
-	for(int i = 0;i < NUM_LASTDAY_WEAPONS;i ++)
-	{
-		if(!GameServer()->Item()->IsWeaponHaveAmmo(i))
-		{
-			m_aWeapons[i].m_Ammo = -1;
 		}
 	}
 }

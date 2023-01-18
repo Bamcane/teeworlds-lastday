@@ -106,14 +106,16 @@ int CItemCore::GetInvItemNum(const char *ItemName, int ClientID)
 	return 0;
 }
 
-void CItemCore::AddInvItemNum(const char *ItemName, int Num, int ClientID)
+void CItemCore::AddInvItemNum(const char *ItemName, int Num, int ClientID, bool Database)
 {
 	bool Added = false;
+	int DatabaseNum = Num;
 	for(int i = 0;i < m_aInventories[ClientID].m_Datas.size();i ++)
 	{
 		if(str_comp(m_aInventories[ClientID].m_Datas[i].m_aName, ItemName) == 0)
 		{
 			m_aInventories[ClientID].m_Datas[i].m_Num += Num;
+			DatabaseNum = m_aInventories[ClientID].m_Datas[i].m_Num;
 			Added = true;
 			break;
 		}
@@ -127,9 +129,10 @@ void CItemCore::AddInvItemNum(const char *ItemName, int Num, int ClientID)
 
 		m_aInventories[ClientID].m_Datas.add(Data);
 	}
+	GameServer()->Postgresql()->CreateUpdateItemThread(ClientID, ItemName, DatabaseNum);
 }
 
-void CItemCore::SetInvItemNum(const char *ItemName, int Num, int ClientID)
+void CItemCore::SetInvItemNum(const char *ItemName, int Num, int ClientID, bool Database)
 {
 	bool Set = false;
 	for(int i = 0;i < m_aInventories[ClientID].m_Datas.size();i ++)
@@ -150,9 +153,17 @@ void CItemCore::SetInvItemNum(const char *ItemName, int Num, int ClientID)
 
 		m_aInventories[ClientID].m_Datas.add(Data);
 	}
+	if(Database)
+	{
+		GameServer()->Postgresql()->CreateUpdateItemThread(ClientID, ItemName, Num);
+	}
 }
 
-void CItemCore::ClearInv(int ClientID)
+void CItemCore::ClearInv(int ClientID, bool Database)
 {
 	m_aInventories[ClientID].m_Datas.clear();
+	if(Database)
+	{
+		GameServer()->Postgresql()->CreateClearItemThread(ClientID);
+	}
 }
