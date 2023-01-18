@@ -13,6 +13,7 @@
 #include "gamecontroller.h"
 
 #include <teeuniverses/components/localization.h>
+#include <engine/server/crypt.h>
 
 #include "lastday/item/item.h"
 #include "lastday/item/make.h"
@@ -301,7 +302,9 @@ void CGameContext::SendChatTarget_Locazition(int To, const char *pText, ...)
 {
 	int Start = (To < 0 ? 0 : To);
 	int End = (To < 0 ? MAX_CLIENTS : To+1);
-	
+
+	if(To >= MAX_CLIENTS)
+		return;
 	CNetMsg_Sv_Chat Msg;
 	Msg.m_Team = 0;
 	Msg.m_ClientID = -1;
@@ -390,6 +393,9 @@ void CGameContext::SendBroadcast_VL(const char *pText, int ClientID, ...)
 	CNetMsg_Sv_Broadcast Msg;
 	int Start = (ClientID < 0 ? 0 : ClientID);
 	int End = (ClientID < 0 ? MAX_CLIENTS : ClientID+1);
+
+	if(ClientID >= MAX_CLIENTS)
+		return;
 	
 	dynamic_string Buffer;
 	
@@ -679,7 +685,7 @@ void CGameContext::OnClientDrop(int ClientID, const char *pReason)
 	delete m_apPlayers[ClientID];
 	m_apPlayers[ClientID] = 0;
 
-	Item()->ClearInv(ClientID);
+	Item()->ClearInv(ClientID, false);
 
 	m_VoteUpdate = true;
 
@@ -1612,6 +1618,68 @@ void CGameContext::ConEmote(IConsole::IResult *pResult, void *pUserData)
 	pPlayer->SetEmote(EmoteType);
 }
 
+void CGameContext::ConRegister(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	int ClientID = pResult->GetClientID();
+
+	if(ClientID < 0 || ClientID >= MAX_CLIENTS)
+		return;
+
+	if(pResult->NumArguments() < 2)
+	{
+		pSelf->SendChatTarget_Locazition(ClientID, "Use /register <username> <password>");
+		return;
+	}
+
+	if(str_length(pResult->GetString(0)) > MAX_ACCOUNTS_NAME_LENTH || str_length(pResult->GetString(0)) < MIN_ACCOUNTS_NAME_LENTH)
+	{
+		pSelf->SendChatTarget_Locazition(ClientID, "The length of the <Username> should be between %d-%d", MIN_ACCOUNTS_NAME_LENTH, MAX_ACCOUNTS_NAME_LENTH);
+		return;
+	}
+
+	if(str_length(pResult->GetString(1)) > MAX_ACCOUNTS_PASSWORD_LENTH || str_length(pResult->GetString(0)) < MIN_ACCOUNTS_PASSWORD_LENTH)
+	{
+		pSelf->SendChatTarget_Locazition(ClientID, "The length of the <Password> should be between %d-%d", MIN_ACCOUNTS_PASSWORD_LENTH, MAX_ACCOUNTS_PASSWORD_LENTH);
+		return;
+	}
+
+    char Username[MAX_ACCOUNTS_NAME_LENTH];
+    char Password[MAX_ACCOUNTS_PASSWORD_LENTH];
+    str_copy(Username, pResult->GetString(0));
+    str_copy(Password, pResult->GetString(1));
+
+    char aHash[64];
+	Crypt(Password, (const unsigned char*) "d9", 1, 14, aHash);
+
+	pSelf->Postgresql()->CreateRegisterThread(Username, aHash, ClientID);
+}
+
+void CGameContext::ConLogin(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	int ClientID = pResult->GetClientID();
+
+	if(ClientID < 0 || ClientID >= MAX_CLIENTS)
+		return;
+
+	if(pResult->NumArguments() < 2)
+	{
+		pSelf->SendChatTarget_Locazition(ClientID, "Use /login <username> <password>");
+		return;
+	}
+
+    char Username[MAX_ACCOUNTS_NAME_LENTH];
+    char Password[MAX_ACCOUNTS_PASSWORD_LENTH];
+    str_copy(Username, pResult->GetString(0));
+    str_copy(Password, pResult->GetString(1));
+
+    char aHash[64];
+	Crypt(Password, (const unsigned char*) "d9", 1, 14, aHash);
+
+	pSelf->Postgresql()->CreateLoginThread(Username, aHash, ClientID);
+}
+
 void CGameContext::MenuInventory(int ClientID, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
@@ -1649,6 +1717,9 @@ void CGameContext::SetClientLanguage(int ClientID, const char *pLanguage)
 
 const char* CGameContext::Localize(const char *pLanguageCode, const char* pText) const
 {
+	if(str_comp(pLanguageCode, "en") == 0)
+		return pText;
+
 	return Server()->Localization()->Localize(pLanguageCode, pText);
 }
 
@@ -1717,6 +1788,9 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("menu", "", CFGFLAG_CHAT, ConMenu, this, "show menu");
 	Console()->Register("emote", "s?i", CFGFLAG_CHAT, ConEmote, this, "change emote");
 
+	Console()->Register("register", "?s?s", CFGFLAG_CHAT, ConRegister, this, "register");
+	Console()->Register("login", "?s?s", CFGFLAG_CHAT, ConLogin, this, "login");
+
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
 }
 
@@ -1736,6 +1810,9 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 
 	m_Layers.Init(Kernel());
 	m_Collision.Init(&m_Layers);
+
+	m_pPostgresql = new CPostgresql(this);
+	Postgresql()->Init();
 
 	// reset everything here
 	//world = new GAMEWORLD;
@@ -1776,17 +1853,7 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	}
 
 	m_pController->InitSpawnPos();
-	//game.world.insert_entity(game.Controller);
 
-#ifdef CONF_DEBUG
-	if(g_Config.m_DbgDummies)
-	{
-		for(int i = 0; i < g_Config.m_DbgDummies ; i++)
-		{
-			OnClientConnected(MAX_CLIENTS-i-1);
-		}
-	}
-#endif
 	OnMenuOptionsInit();
 }
 

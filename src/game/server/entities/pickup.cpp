@@ -10,7 +10,7 @@ CPickup::CPickup(CGameWorld *pGameWorld, vec2 Pos, vec2 Dir, const char *Name, i
 	m_Pos = Pos;
 	m_StartPos = Pos;
 	m_Direction = Dir;
-	m_Name = Name;
+	str_copy(m_aName, Name);
 	m_Num = Num;
 	m_ProximityRadius = PickupPhysSize;
 	m_StartTick = Server()->Tick();
@@ -83,11 +83,11 @@ void CPickup::Tick()
 
 	// Check if a player intersected us
 	CCharacter *pChr = GameServer()->m_World.ClosestCharacter(m_Pos, 32.0f, 0);
-	if(pChr && pChr->IsAlive() && !pChr->GetPlayer()->m_IsBot)
+	if(pChr && pChr->IsAlive() && pChr->GetPlayer() && !pChr->GetPlayer()->m_IsBot)
 	{
-		GameServer()->Item()->AddInvItemNum(m_Name, m_Num, pChr->GetCID());
-		GameServer()->SendChatTarget_Locazition(pChr->GetCID(), _("You got %d %s"),
-			m_Num, m_Name);
+		GameServer()->SendChatTarget_Locazition(pChr->GetCID(), "You got %d %s",
+			m_Num, m_aName);
+		GameServer()->Item()->AddInvItemNum(m_aName, m_Num, pChr->GetCID());
 		GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH);
 
 		GameServer()->m_World.DestroyEntity(this);

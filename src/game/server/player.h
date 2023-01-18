@@ -121,16 +121,17 @@ private:
 
 	void HandleTuningParams(); //This function will send the new parameters if needed
 
-public:
-	CTuningParams* GetNextTuningParams() { return &m_NextTuningParams; };
-	void SetEmote(int Emote);
-
 private:
 	bool m_Menu;
 	int m_MenuPage;
 	int m_Emote;
+
+	int m_UserID;
+
 public:
+	CTuningParams* GetNextTuningParams() { return &m_NextTuningParams; };
 	inline bool GetMenuStatus() const { return m_Menu; }
+	void SetEmote(int Emote);
 	void OpenMenu();
 	void CloseMenu();
 	void SetMenuPage(int Page);
@@ -145,6 +146,10 @@ public:
 	// Bot
 	CBotData m_BotData;
 	bool m_IsBot;
+
+	bool IsLogin() { return m_UserID > 0; }
+	int GetUserID() { return m_UserID; }
+	void Login(int UserID);
 };
 
 #endif

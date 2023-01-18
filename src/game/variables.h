@@ -6,6 +6,11 @@
 
 MACRO_CONFIG_INT(SvGeneratedMapWidth, sv_generated_map_width, 256, 64, 2000, CFGFLAG_SERVER, "generated map width")
 MACRO_CONFIG_INT(SvGeneratedMapHeight, sv_generated_map_height, 128, 64, 2000, CFGFLAG_SERVER, "generated map height")
+MACRO_CONFIG_INT(SvGeneratedMap, sv_generated_map, 1, 0, 1, CFGFLAG_SERVER, "generated map")
 
-
+MACRO_CONFIG_STR(SvSqlDatabase, sv_sql_database, 256, "db_lastday", CFGFLAG_SERVER, "SQL Database name")
+MACRO_CONFIG_STR(SvSqlUser, sv_sql_user, 256, "postgres", CFGFLAG_SERVER, "SQL User")
+MACRO_CONFIG_STR(SvSqlPass, sv_sql_pass, 256, "passless", CFGFLAG_SERVER, "SQL Password")
+MACRO_CONFIG_STR(SvSqlIP, sv_sql_ip, 256, "127.0.0.1", CFGFLAG_SERVER, "SQL Database IP")
+MACRO_CONFIG_INT(SvSqlPort, sv_sql_port, 5432, 0, 65535, CFGFLAG_SERVER, "SQL Database port")
 #endif

@@ -1,6 +1,8 @@
 #ifndef GAME_SERVER_DEFINE_H
 #define GAME_SERVER_DEFINE_H
 
+#include "botdata.h"
+
 #include <base/system.h>
 
 #define MENU_CLOSETICK 200
@@ -35,22 +37,4 @@ enum MenuPages
     MENUPAGE_NOTMAIN,
     MENUPAGE_ITEM,
 };
-
-class CBotData
-{
-public:
-    CBotData() {};
-    char m_SkinName[64];
-    int m_BodyColor;
-    int m_FeetColor;
-    int m_AttackProba;
-    int m_SpawnProba;
-    int m_DropProba;
-    int m_DropNum;
-    bool m_TeamDamage;
-    bool m_Hammer;
-    bool m_Gun;
-    bool m_Hook;
-};
-
 #endif

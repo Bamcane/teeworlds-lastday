@@ -91,6 +91,8 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	GameServer()->m_World.InsertEntity(this);
 	m_Alive = true;
 
+	SyncHealth();
+
 	GameServer()->m_pController->OnCharacterSpawn(this);
 
 	return true;
@@ -454,8 +456,8 @@ void CCharacter::HandleInput()
 		m_SitTick++;
 		if(m_SitTick >= SERVER_TICK_SPEED * 4)
 		{
-			if(!IncreaseHealth(1)) IncreaseArmor(1);
-			GameServer()->CreateSoundGlobal(SOUND_PICKUP_HEALTH, GetCID());
+			if(IncreaseHealth(1))
+				GameServer()->CreateSoundGlobal(SOUND_PICKUP_HEALTH, GetCID());
 			m_SitTick = 0;
 		}
 
@@ -478,6 +480,14 @@ void CCharacter::SyncWeapon()
 {
 	CInventory *pInventory = GameServer()->Item()->GetInventory(GetCID());
 
+	for(int i = 0;i < NUM_LASTDAY_WEAPONS;i ++)
+	{
+		if(!GameServer()->Item()->IsWeaponHaveAmmo(i))
+		{
+			m_aWeapons[i].m_Ammo = -1;
+		}else m_aWeapons[i].m_Ammo = 0;
+	}
+
 	for(int i = 0;i < pInventory->m_Datas.size();i ++)
 	{
 		CItemData *pData = GameServer()->Item()->GetItemData(pInventory->m_Datas[i].m_aName);
@@ -489,12 +499,23 @@ void CCharacter::SyncWeapon()
 				m_aWeapons[pData->m_WeaponID].m_Got = pInventory->m_Datas[i].m_Num;
 		}
 	}
+}
 
-	for(int i = 0;i < NUM_LASTDAY_WEAPONS;i ++)
+void CCharacter::SyncHealth()
+{
+	m_MaxHealth = 10;
+
+	CInventory *pInventory = GameServer()->Item()->GetInventory(GetCID());
+
+	for(int i = 0;i < pInventory->m_Datas.size();i ++)
 	{
-		if(!GameServer()->Item()->IsWeaponHaveAmmo(i))
+		CItemData *pData = GameServer()->Item()->GetItemData(pInventory->m_Datas[i].m_aName);
+		if(pData)
 		{
-			m_aWeapons[i].m_Ammo = -1;
+			if(pData->m_Health)
+			{
+				m_MaxHealth += pData->m_Health * pInventory->m_Datas[i].m_Num;
+			}
 		}
 	}
 }
@@ -519,10 +540,12 @@ void CCharacter::OnWeaponFire(int Weapon)
 
 void CCharacter::Tick()
 {
-	// Sync Weapon
+	// Sync
 	SyncWeapon();
+	SyncHealth();
 
-	DoBotActions();
+	if(Server()->IsActive())
+		DoBotActions();
 
 	if(!m_Alive)
 		return;
@@ -637,7 +660,13 @@ void CCharacter::TickPaused()
 
 bool CCharacter::IncreaseHealth(int Amount)
 {
-	if(m_Health >= 10)
+	if(Amount == -1)
+	{
+		m_Health = m_MaxHealth;
+		return true;
+	}
+
+	if(m_Health >= m_MaxHealth)
 		return false;
 	m_Health = clamp(m_Health+Amount, 0, 10);
 	return true;
@@ -657,7 +686,7 @@ void CCharacter::Die(int Killer, int Weapon)
 	m_pPlayer->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
 	int ModeSpecial = GameServer()->m_pController->OnCharacterDeath(this, GameServer()->m_apPlayers[Killer], Weapon);
 
-	if(!m_pPlayer->m_IsBot && (GameServer()->m_apPlayers[Killer] && !GameServer()->m_apPlayers[Killer]->m_IsBot))
+	if(GameServer()->m_apPlayers[Killer] && !GameServer()->m_apPlayers[Killer]->m_IsBot)
 	{
 		char aBuf[256];
 		str_format(aBuf, sizeof(aBuf), "kill killer='%d:%s' victim='%d:%s' weapon=%d special=%d",
@@ -695,7 +724,7 @@ void CCharacter::Die(int Killer, int Weapon)
 bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 {
 	CPlayer *pFrom = GameServer()->m_apPlayers[From];
-	if(pFrom && pFrom->m_IsBot && m_pPlayer->m_IsBot && !pFrom->m_BotData.m_TeamDamage)
+	if(pFrom && pFrom->m_IsBot && m_pPlayer->m_IsBot && !pFrom->m_BotData.m_TeamDamage && str_comp(pFrom->m_BotData.m_aName, m_pPlayer->m_BotData.m_aName) == 0)
 		return false;
 
 	m_Core.m_Vel += Force;
@@ -772,8 +801,8 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 		}
 
 		// create pickup
-		if(m_pPlayer->m_IsBot && random_int(1, 100) <= m_pPlayer->m_BotData.m_DropProba)
-			GameServer()->m_pController->CreateZombiePickup(m_Pos, Force/Force, m_pPlayer->m_BotData.m_DropNum);
+		if(m_pPlayer->m_IsBot && pFrom && !pFrom->m_IsBot)
+			GameServer()->m_pController->CreatePickup(m_Pos, vec2(Force/abs(Force)), m_pPlayer->m_BotData);
 
 		Die(From, Weapon);
 
@@ -839,7 +868,7 @@ void CCharacter::Snap(int SnappingClient)
 	if(m_pPlayer->GetCID() == SnappingClient || SnappingClient == -1 ||
 		(!g_Config.m_SvStrictSpectateMode && m_pPlayer->GetCID() == GameServer()->m_apPlayers[SnappingClient]->m_SpectatorID))
 	{
-		pCharacter->m_Health = m_Health;
+		pCharacter->m_Health = max(1, round_to_int((float)(m_Health / (float)m_MaxHealth) *10.0f));
 		pCharacter->m_Armor = m_Armor;
 		if(m_aWeapons[m_ActiveWeapon].m_Ammo > 0)
 			pCharacter->m_AmmoCount = m_aWeapons[m_ActiveWeapon].m_Ammo;
@@ -916,11 +945,6 @@ void CCharacter::DoBotActions()
 	if(!m_Alive)
 		return;
 
-	if(CheckBotInRadius(m_ProximityRadius*2) > 5)
-	{
-		Die(GetCID(), WEAPON_HAMMER);
-		return;
-	}
 	CCharacter *pOldTarget = GameServer()->GetPlayerChar(m_Botinfo.m_Target);
 
 	// Refind target
@@ -1114,15 +1138,14 @@ CCharacter *CCharacter::FindTarget(vec2 Pos, float Radius)
 	CCharacter *p = (CCharacter *)GameServer()->m_World.FindFirst(CGameWorld::ENTTYPE_CHARACTER);
 	for(; p; p = (CCharacter *)p->TypeNext())
  	{
-		if(p->GetPlayer() && p->GetPlayer()->m_IsBot)
-			continue;
-
-		if(GameServer()->Collision()->IntersectLine(m_Pos, p->m_Pos, 0x0, 0x0))
-			continue;
-
 		float Len = distance(Pos, p->m_Pos);
 		if(Len < p->m_ProximityRadius+Radius)
 		{
+			if(p->GetPlayer() && p->GetPlayer()->m_IsBot && str_comp(m_pPlayer->m_BotData.m_aName, p->GetPlayer()->m_BotData.m_aName) == 0)
+				continue;
+
+			if(GameServer()->Collision()->IntersectLine(m_Pos, p->m_Pos, 0x0, 0x0))
+				continue;
 			if(Len < ClosestRange)
 			{
 				ClosestRange = Len;

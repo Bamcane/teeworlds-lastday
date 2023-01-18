@@ -40,10 +40,10 @@ void CItemCore::InitItem()
 			CItemData *pData = new CItemData();
 			str_copy(pData->m_aName, ItemArray[i].value("name", " ").c_str());
 			pData->m_IsMakeable = ItemArray[i].value("makeable", 1);
-			pData->m_IsDrops = ItemArray[i].value("drops", 0);
 			pData->m_WeaponAmmoID = ItemArray[i].value("weapon_ammo", -1);
 			pData->m_WeaponID = ItemArray[i].value("weapon", -1);
 			pData->m_GiveNum = ItemArray[i].value("give_num", 1);
+			pData->m_Health = ItemArray[i].value("health", 0);
 			
 			if(pData->m_IsMakeable)
 			{
@@ -63,11 +63,6 @@ void CItemCore::InitItem()
 			}
 
 			m_aItems.add(*pData);
-
-			if(pData->m_IsDrops)
-			{
-				m_aDrops.add(pData);
-			}
 		}
 	}
 }
@@ -111,14 +106,16 @@ int CItemCore::GetInvItemNum(const char *ItemName, int ClientID)
 	return 0;
 }
 
-void CItemCore::AddInvItemNum(const char *ItemName, int Num, int ClientID)
+void CItemCore::AddInvItemNum(const char *ItemName, int Num, int ClientID, bool Database)
 {
 	bool Added = false;
+	int DatabaseNum = Num;
 	for(int i = 0;i < m_aInventories[ClientID].m_Datas.size();i ++)
 	{
 		if(str_comp(m_aInventories[ClientID].m_Datas[i].m_aName, ItemName) == 0)
 		{
 			m_aInventories[ClientID].m_Datas[i].m_Num += Num;
+			DatabaseNum = m_aInventories[ClientID].m_Datas[i].m_Num;
 			Added = true;
 			break;
 		}
@@ -132,9 +129,10 @@ void CItemCore::AddInvItemNum(const char *ItemName, int Num, int ClientID)
 
 		m_aInventories[ClientID].m_Datas.add(Data);
 	}
+	GameServer()->Postgresql()->CreateUpdateItemThread(ClientID, ItemName, DatabaseNum);
 }
 
-void CItemCore::SetInvItemNum(const char *ItemName, int Num, int ClientID)
+void CItemCore::SetInvItemNum(const char *ItemName, int Num, int ClientID, bool Database)
 {
 	bool Set = false;
 	for(int i = 0;i < m_aInventories[ClientID].m_Datas.size();i ++)
@@ -155,9 +153,17 @@ void CItemCore::SetInvItemNum(const char *ItemName, int Num, int ClientID)
 
 		m_aInventories[ClientID].m_Datas.add(Data);
 	}
+	if(Database)
+	{
+		GameServer()->Postgresql()->CreateUpdateItemThread(ClientID, ItemName, Num);
+	}
 }
 
-void CItemCore::ClearInv(int ClientID)
+void CItemCore::ClearInv(int ClientID, bool Database)
 {
 	m_aInventories[ClientID].m_Datas.clear();
+	if(Database)
+	{
+		GameServer()->Postgresql()->CreateClearItemThread(ClientID);
+	}
 }

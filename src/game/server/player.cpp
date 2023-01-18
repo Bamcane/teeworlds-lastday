@@ -45,6 +45,8 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, bool Bot, CBotData *Bo
 	    idMap[i] = -1;
 	}
 	idMap[0] = ClientID;
+
+	m_UserID = 0;
 }
 
 CPlayer::~CPlayer()
@@ -187,15 +189,20 @@ void CPlayer::Snap(int SnappingClient)
 #endif
 	if(!Server()->ClientIngame(m_ClientID))
 		return;
-		
+
 	int id = m_ClientID;
 	if (!Server()->Translate(id, SnappingClient)) return;
+		
+	if(id > MAX_PLAYERS)
+		return;
 
 	CNetObj_ClientInfo *pClientInfo = static_cast<CNetObj_ClientInfo *>(Server()->SnapNewItem(NETOBJTYPE_CLIENTINFO, id, sizeof(CNetObj_ClientInfo)));
 	if(!pClientInfo)
 		return;
 
-	StrToInts(&pClientInfo->m_Name0, 4, Server()->ClientName(m_ClientID));
+	const char *pLanguage = GameServer()->m_apPlayers[SnappingClient] ? GameServer()->m_apPlayers[SnappingClient]->m_aLanguage : "en";
+
+	StrToInts(&pClientInfo->m_Name0, 4, m_IsBot ? GameServer()->Localize(pLanguage, m_BotData.m_aName) : Server()->ClientName(m_ClientID));
 	
 	std::string Buffer;
 	Buffer.append(std::to_string(m_pCharacter ? (int)(m_pCharacter->GetHealth() / (float)m_pCharacter->GetMaxHealth() * 100) : 0));
@@ -454,4 +461,9 @@ void CPlayer::SetMenuPage(int Page)
 void CPlayer::SetEmote(int Emote)
 {
 	m_Emote = Emote;
+}
+
+void CPlayer::Login(int UserID)
+{
+	m_UserID = UserID;
 }

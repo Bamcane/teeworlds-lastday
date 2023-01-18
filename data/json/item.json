@@ -3,7 +3,6 @@
     [
         {
             "name": "gun ammo",
-            "drops": 1,
             "weapon_ammo": 1,
             "need":
             [
@@ -16,7 +15,6 @@
         },
         {
             "name": "shotgun ammo",
-            "drops": 1,
             "weapon_ammo": 2,
             "need":
             [
@@ -29,7 +27,6 @@
         },
         {
             "name": "grenade ammo",
-            "drops": 1,
             "weapon_ammo": 3,
             "need":
             [
@@ -42,7 +39,6 @@
         },
         {
             "name": "laser",
-            "drops": 1,
             "weapon_ammo": 4,
             "need":
             [
@@ -55,7 +51,6 @@
         },
         {
             "name": "freeze laser",
-            "drops": 1,
             "weapon_ammo": 6,
             "need":
             [
@@ -192,18 +187,20 @@
             ]   
         },
         {
+            "name": "gold blood",
+            "health": 2,
+            "makeable": 0
+        },
+        {
             "name": "metal",
-            "drops": 1,
             "makeable": 0
         },
         {
             "name": "wood",
-            "drops": 1,
             "makeable": 0
         },
         {
             "name": "stone",
-            "drops": 1,
             "makeable": 0
         }
     ]

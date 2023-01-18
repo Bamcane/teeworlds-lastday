@@ -18,6 +18,8 @@
 
 using json = nlohmann::json;
 
+static LOCK BotDataLock = 0;
+
 CGameController::CGameController(class CGameContext *pGameServer)
 {
 	m_pGameServer = pGameServer;
@@ -37,6 +39,10 @@ CGameController::CGameController(class CGameContext *pGameServer)
 	m_ForceBalanced = false;
 	
 	m_SpawnPoints.clear();
+
+	BotDataLock = lock_create();
+
+	m_BotDataInit = false;
 	
 	WeaponIniter.InitWeapons(pGameServer);
 
@@ -205,10 +211,10 @@ int CGameController::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *
 void CGameController::OnCharacterSpawn(class CCharacter *pChr)
 {
 	// default health
-	pChr->IncreaseHealth(10);
+	pChr->IncreaseHealth(-1);
 
 	// give default weapons
-	GameServer()->Item()->SetInvItemNum("hammer", 1, pChr->GetCID());
+	GameServer()->Item()->SetInvItemNum("hammer", 1, pChr->GetCID(), 0);
 }
 
 void CGameController::TogglePause()
@@ -283,7 +289,7 @@ void CGameController::Tick()
 
 	if(m_GameOverTick == -1)
 	{
-		if(GameServer()->GetBotNum() < MAX_BOTS)
+		if(GameServer()->GetBotNum() < MAX_BOTS && m_BotDataInit)
 			OnCreateBot();
 	}
 
@@ -294,16 +300,9 @@ void CGameController::Tick()
 	// check for inactive players
 	if(g_Config.m_SvInactiveKickTime > 0)
 	{
-		for(int i = 0; i < MAX_CLIENTS; ++i)
+		for(int i = 0; i < MAX_PLAYERS; ++i)
 		{
-		#ifdef CONF_DEBUG
-			if(g_Config.m_DbgDummies)
-			{
-				if(i >= MAX_CLIENTS-g_Config.m_DbgDummies)
-					break;
-			}
-		#endif
-			if(GameServer()->m_apPlayers[i] && !GameServer()->m_apPlayers[i]->m_IsBot && GameServer()->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS && !Server()->IsAuthed(i))
+			if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS && !Server()->IsAuthed(i))
 			{
 				if(Server()->Tick() > GameServer()->m_apPlayers[i]->m_LastActionTick+g_Config.m_SvInactiveKickTime*Server()->TickSpeed()*60)
 				{
@@ -518,8 +517,10 @@ void CGameController::OnCreateBot()
 	}
 }
 
-void CGameController::InitBotData()
+static void InitBotDataThread(void *pUser)
 {
+	lock_wait(BotDataLock);
+	CGameController *pController = (CGameController *) pUser;
 	// read file data into buffer
 	const char *pFilename = "./data/json/bot.json";
 	std::ifstream File(pFilename);
@@ -527,6 +528,7 @@ void CGameController::InitBotData()
 	if(!File.is_open())
 	{
 		dbg_msg("Bot", "can't open 'data/json/bot.json'");
+		lock_unlock(BotDataLock);
 		return;
 	}
 
@@ -539,20 +541,42 @@ void CGameController::InitBotData()
 		for(unsigned i = 0; i < BotArray.size(); ++i)
 		{
 			CBotData *pData = new CBotData();
+			str_copy(pData->m_aName, BotArray[i].value("name", "null").c_str());
 			str_copy(pData->m_SkinName, BotArray[i].value("skin", "default").c_str());
 			pData->m_BodyColor = BotArray[i].value("body_color", -1);
 			pData->m_FeetColor = BotArray[i].value("feet_color", -1);
 			pData->m_AttackProba = BotArray[i].value("attack_proba", 20);
 			pData->m_SpawnProba = BotArray[i].value("spawn_proba", 100);
-			pData->m_DropProba = BotArray[i].value("drop_proba", 80);
-			pData->m_DropNum = BotArray[i].value("drop_num", 1);
 			pData->m_TeamDamage = BotArray[i].value("teamdamage", 0);
 			pData->m_Gun = BotArray[i].value("gun", 0);
 			pData->m_Hammer = BotArray[i].value("hammer", 0);
 			pData->m_Hook = BotArray[i].value("hook", 0);
-			m_BotDatas.add(*pData);
+			
+			json DropsArray = BotArray[i]["drops"];
+			if(DropsArray.is_array())
+			{
+				for(unsigned j = 0;j < DropsArray.size();j++)
+				{
+					CBotDropData *pDropData = new CBotDropData();
+					str_copy(pDropData->m_ItemName, DropsArray[j].value("name", " ").c_str());
+					pDropData->m_DropProba = DropsArray[j].value("proba", 0);
+					pDropData->m_MinNum = DropsArray[j].value("minnum", 0);
+					pDropData->m_MaxNum = DropsArray[j].value("maxnum", 0);
+					pData->m_Drops.add(*pDropData);
+				}
+			}
+
+			pController->m_BotDatas.add(*pData);
 		}
 	}
+	pController->m_BotDataInit = true;
+	lock_unlock(BotDataLock);
+}
+
+void CGameController::InitBotData()
+{
+	void *thread = thread_init(InitBotDataThread, this);
+	thread_detach(thread);
 }
 
 CBotData *CGameController::RandomBotData()
@@ -568,13 +592,16 @@ CBotData *CGameController::RandomBotData()
 	return pData;
 }	
 
-void CGameController::CreateZombiePickup(vec2 Pos, vec2 Dir, int DropNum)
+void CGameController::CreatePickup(vec2 Pos, vec2 Dir, CBotData BotData)
 {
-	const char *PickupName;
-	int PickupRandom = random_int(0, GameServer()->Item()->m_aDrops.size()-1);
-	PickupName = GameServer()->Item()->m_aDrops[PickupRandom]->m_aName;
-	
-	int PickupNum = max(1, random_int(-1, 1) + DropNum);
-
-	new CPickup(&GameServer()->m_World, Pos, Dir, PickupName, PickupNum);
+	for(int i = 0;i < BotData.m_Drops.size();i++)
+	{
+		if(random_int(1, 100) <= BotData.m_Drops[i].m_DropProba)
+		{
+			int PickupNum = random_int(BotData.m_Drops[i].m_MinNum, BotData.m_Drops[i].m_MaxNum);
+			const char *pName = BotData.m_Drops[i].m_ItemName;
+			dbg_msg(pName, "%d:%d", i, PickupNum);
+			new CPickup(&GameServer()->m_World, Pos, Dir, pName, PickupNum);
+		}
+	}
 }

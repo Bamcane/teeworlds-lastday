@@ -18,10 +18,10 @@ public:
 	CItemData();
 	char m_aName[128];
     bool m_IsMakeable;
-    bool m_IsDrops;
 	int m_WeaponID;
 	int m_WeaponAmmoID;
     int m_GiveNum;
+    int m_Health;
     CMakeData m_Needs;
 };
 

@@ -254,7 +254,7 @@ find_package(Git)
 find_package(PythonInterp)
 find_package(Curl)
 find_package(OpenSSL)
-
+find_package(PQXX)
 
 if(TARGET_OS AND TARGET_OS STREQUAL "mac")
   find_program(DMG dmg)
@@ -293,8 +293,6 @@ function(show_dependency_status OUTPUT_NAME NAME)
   endif()
 endfunction()
 
-show_dependency_status("Curl" CURL)
-show_dependency_status("OpenSSL" OPENSSL FALSE)
 
 if(TARGET_OS AND TARGET_OS STREQUAL "mac")
   show_dependency_status("Dmg tools" DMGTOOLS)
@@ -306,12 +304,16 @@ show_dependency_status("PythonInterp" PYTHONINTERP)
 show_dependency_status("Curl" CURL)
 show_dependency_status("OpenSSL Crypto" CRYPTO)
 show_dependency_status("Zlib" ZLIB)
+show_dependency_status("pqxx" PQXX)
 
 if(NOT(PYTHONINTERP_FOUND))
   message(SEND_ERROR "You must install Python to compile Teeworlds")
 endif()
 if(NOT(CURL_FOUND))
   message(SEND_ERROR "You must install curl to compile Teeworlds")
+endif()
+if(NOT(PQXX_FOUND))
+  message(SEND_ERROR "You must install pqxx to use PostgreSql")
 endif()
 
 if(TARGET_OS STREQUAL "windows")
@@ -478,7 +480,7 @@ else()
 endif()
 
 # Libraries
-set(LIBS_SERVER ${LIBS} ${OPENSSL_LIBRARIES})
+set(LIBS_SERVER ${LIBS} ${OPENSSL_LIBRARIES} ${PQXX_LIBRARIES})
 
 # Target
 set(TARGET_SERVER ${SERVER_EXECUTABLE})
@@ -847,6 +849,7 @@ foreach(target ${TARGETS_OWN})
   target_compile_definitions(${target} PRIVATE $<$<CONFIG:Debug>:CONF_DEBUG>)
   target_include_directories(${target} PRIVATE ${CURL_INCLUDE_DIRS})
   target_include_directories(${target} PRIVATE ${ZLIB_INCLUDE_DIRS})
+  target_include_directories(${target} PRIVATE ${PQXX_INCLUDE_DIR})
 endforeach()
 
 foreach(target ${TARGETS_DEP})

@@ -46,6 +46,7 @@ public:
 	void HandleInput();
 
 	void SyncWeapon();
+	void SyncHealth();
 	void OnWeaponFire(int Weapon);
 
 	void OnPredictedInput(CNetObj_PlayerInput *pNewInput);

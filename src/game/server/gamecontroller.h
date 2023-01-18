@@ -143,10 +143,11 @@ public:
 	void OnCreateBot();
 	void InitBotData();
 	CBotData *RandomBotData();
-	array<CBotData> m_BotDatas;
-/** Bot End **/
+	void CreatePickup(vec2 Pos, vec2 Dir, CBotData BotData);
 
-	void CreateZombiePickup(vec2 Pos, vec2 Dir, int DropNum);
+	array<CBotData> m_BotDatas;
+	bool m_BotDataInit;
+/** Bot End **/
 
 	WeaponInit WeaponIniter;
 };
