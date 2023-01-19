@@ -86,7 +86,7 @@ bool CItemCore::IsWeaponHaveAmmo(int Weapon)
 {
 	for(int i = 0;i < m_aItems.size();i++)
 	{
-		if(m_aItems[i].m_WeaponAmmoID == i)
+		if(m_aItems[i].m_WeaponAmmoID == Weapon)
 		{
 			return 1;
 		}

@@ -2,6 +2,7 @@
 #include "localization.h"
 
 /* BEGIN EDIT *********************************************************/
+#include <base/system.h>
 #include <engine/external/json-parser/json.h>
 #include <engine/storage.h>
 #include <unicode/ushape.h>
@@ -265,7 +266,7 @@ static char* format_integer_with_commas(char commas, int n)
 	return _formatted_number;
 }
 
-void CLocalization::Format_V(dynamic_string& Buffer, const char* pLanguageCode, const char* pText, va_list VarArgs)
+void CLocalization::Format_V(std::string& Buffer, const char* pLanguageCode, const char* pText, va_list VarArgs)
 {
 	CLanguage* pLanguage = m_pMainLanguage;	
 	if(pLanguageCode)
@@ -306,27 +307,31 @@ void CLocalization::Format_V(dynamic_string& Buffer, const char* pLanguageCode, 
 			{
 				const char* pVarArgValue = va_arg(VarArgsIter, const char*);
 				const char* pTranslatedValue = pLanguage->Localize(pVarArgValue);
-				BufferIter = Buffer.append_at(BufferIter, (pTranslatedValue ? pTranslatedValue : pVarArgValue));
+				Buffer.insert(BufferIter, (pTranslatedValue ? pTranslatedValue : pVarArgValue));
+				BufferIter = min((unsigned long)(BufferIter + str_length(pTranslatedValue ? pTranslatedValue : pVarArgValue)), Buffer.max_size()-1);
 			}
 			else if(str_comp_num("%d", pText + ParamTypeStart, 2) == 0) // intiger
 			{
 				char aBuf[128];
 				const int pVarArgValue = va_arg(VarArgsIter, int);
 				str_format(aBuf, sizeof(aBuf), "%d", pVarArgValue); // %ll
-				BufferIter = Buffer.append_at(BufferIter, aBuf);
+				Buffer.insert(BufferIter, aBuf);
+				BufferIter = min((unsigned long)(BufferIter + str_length(aBuf)), Buffer.max_size()-1);
 			}
 			else if(str_comp_num("%f", pText + ParamTypeStart, 2) == 0) // float
 			{
 				char aBuf[128];
 				const float pVarArgValue = va_arg(VarArgsIter, float);
 				str_format(aBuf, sizeof(aBuf), "%f", pVarArgValue); // %f
-				BufferIter = Buffer.append_at(BufferIter, aBuf);
+				Buffer.insert(BufferIter, aBuf);
+				BufferIter = min((unsigned long)(BufferIter + str_length(aBuf)), Buffer.max_size()-1);
 			}
 			else if(str_comp_num("%v", pText + ParamTypeStart, 2) == 0) // value
 			{
 				const int64 pVarArgValue = va_arg(VarArgsIter, int64);
 				char* aBuffer = format_integer_with_commas(',', pVarArgValue);
-				BufferIter = Buffer.append_at(BufferIter, aBuffer);
+				Buffer.insert(BufferIter, aBuffer);
+				BufferIter = min((unsigned long)(BufferIter + str_length(aBuffer)), Buffer.max_size()-1);
 				delete[] aBuffer;
 			}
 
@@ -339,7 +344,8 @@ void CLocalization::Format_V(dynamic_string& Buffer, const char* pLanguageCode, 
 		{
 			if(pText[Iter] == '%')
 			{
-				BufferIter = Buffer.append_at_num(BufferIter, pText+Start, Iter-Start);
+				Buffer.insert(BufferIter, pText+Start, 0, Iter - Start);
+				BufferIter = min((unsigned long)(BufferIter + Iter - Start), Buffer.max_size()-1);
 				ParamTypeStart = Iter;
 			}
 		}
@@ -349,11 +355,12 @@ void CLocalization::Format_V(dynamic_string& Buffer, const char* pLanguageCode, 
 	
 	if(Iter > 0 && ParamTypeStart == -1)
 	{
-		BufferIter = Buffer.append_at_num(BufferIter, pText+Start, Iter-Start);
+		Buffer.insert(BufferIter, pText+Start, 0, Iter - Start);
+		BufferIter = min((unsigned long)(BufferIter + Iter - Start), Buffer.max_size()-1);
 	}
 }
 
-void CLocalization::Format(dynamic_string& Buffer, const char* pLanguageCode, const char* pText, ...)
+void CLocalization::Format(std::string& Buffer, const char* pLanguageCode, const char* pText, ...)
 {
 	va_list VarArgs;
 	va_start(VarArgs, pText);
@@ -363,14 +370,14 @@ void CLocalization::Format(dynamic_string& Buffer, const char* pLanguageCode, co
 	va_end(VarArgs);
 }
 
-void CLocalization::Format_VL(dynamic_string& Buffer, const char* pLanguageCode, const char* pText, va_list VarArgs)
+void CLocalization::Format_VL(std::string& Buffer, const char* pLanguageCode, const char* pText, va_list VarArgs)
 {
 	const char* pLocalText = Localize(pLanguageCode, pText);
 	
 	Format_V(Buffer, pLanguageCode, pLocalText, VarArgs);
 }
 
-void CLocalization::Format_L(dynamic_string& Buffer, const char* pLanguageCode, const char* pText, ...)
+void CLocalization::Format_L(std::string& Buffer, const char* pLanguageCode, const char* pText, ...)
 {
 	va_list VarArgs;
 	va_start(VarArgs, pText);

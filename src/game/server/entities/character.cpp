@@ -482,10 +482,10 @@ void CCharacter::SyncWeapon()
 
 	for(int i = 0;i < NUM_LASTDAY_WEAPONS;i ++)
 	{
-		if(!GameServer()->Item()->IsWeaponHaveAmmo(i))
+		if(GameServer()->Item()->IsWeaponHaveAmmo(i))
 		{
-			m_aWeapons[i].m_Ammo = -1;
-		}else m_aWeapons[i].m_Ammo = 0;
+			m_aWeapons[i].m_Ammo = 0;
+		}else m_aWeapons[i].m_Ammo = 1;
 	}
 
 	for(int i = 0;i < pInventory->m_Datas.size();i ++)

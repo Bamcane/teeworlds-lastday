@@ -203,8 +203,9 @@ void CMenu::ShowMenu(int ClientID, int Line)
         }
 
         MenuBuffer.append("\n\n");
-        MenuBuffer.append(Localize(pPlayer->m_SelectOption));
-        MenuBuffer.append(Localize("Requires"));
+        std::string TempBuffer;
+        GameServer()->Server()->Localization()->Format_L(TempBuffer, m_aLanguageCode, "%s requires", pPlayer->m_SelectOption);
+        MenuBuffer.append(TempBuffer);
         MenuBuffer.append(":");
         MenuBuffer.append(Buffer);
     }

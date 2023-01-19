@@ -6,11 +6,7 @@
 #define CStorage IStorage
 /* END EDIT ***********************************************************/
 
-#include <unicode/ucnv.h>
-#include <unicode/numfmt.h>
-#include <unicode/upluralrules.h>
-#include <unicode/tmutfmt.h>
-
+#include <string>
 #include <stdarg.h>
 
 struct CLocalizableString
@@ -107,11 +103,11 @@ public:
 	const char* Localize(const char* pLanguageCode, const char* pText);
 	
 	//format
-	void Format_V(dynamic_string& Buffer, const char* pLanguageCode, const char* pText, va_list VarArgs);
-	void Format(dynamic_string& Buffer, const char* pLanguageCode, const char* pText, ...);
+	void Format_V(std::string& Buffer, const char* pLanguageCode, const char* pText, va_list VarArgs);
+	void Format(std::string& Buffer, const char* pLanguageCode, const char* pText, ...);
 	//localize, format
-	void Format_VL(dynamic_string& Buffer, const char* pLanguageCode, const char* pText, va_list VarArgs);
-	void Format_L(dynamic_string& Buffer, const char* pLanguageCode, const char* pText, ...);
+	void Format_VL(std::string& Buffer, const char* pLanguageCode, const char* pText, va_list VarArgs);
+	void Format_L(std::string& Buffer, const char* pLanguageCode, const char* pText, ...);
 };
 
 #endif

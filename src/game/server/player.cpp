@@ -18,7 +18,7 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, bool Bot, CBotData *Bo
 	m_ScoreStartTick = Server()->Tick();
 	m_pCharacter = 0;
 	m_ClientID = ClientID;
-	m_Team = 0;
+	m_Team = Bot ? 0 : -1;
 	m_IsBot = Bot;
 	if(BotData)
 		m_BotData = *BotData;
@@ -466,4 +466,5 @@ void CPlayer::SetEmote(int Emote)
 void CPlayer::Login(int UserID)
 {
 	m_UserID = UserID;
+	SetTeam(0);
 }

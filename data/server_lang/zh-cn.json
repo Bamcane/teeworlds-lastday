@@ -213,6 +213,10 @@
             "value": "保持你的希望"
         },
         {
+            "key": "You must login before join survival",
+            "value": "你必须在加入前登陆"
+        },
+        {
             "key": "Invalid spectator id used",
             "value": "无效的旁观者客户端ID"
         },
@@ -313,8 +317,8 @@
             "value": "你得到了%d%s"
         },
         {
-            "key": "Requires",
-            "value": "需要"
+            "key": "%s requires",
+            "value": "%s 需要"
         },
         {
             "key": "Chat",
@@ -361,11 +365,11 @@
             "value": "错误的玩家昵称!"  
         },
         {
-            "key": "Use /register <username> <password>",
+            "key": "Use /register <username> <password> to register",
             "value": "使用/register <用户名> <密码> 注册"
         },
         {
-            "key": "Use /login <username> <password>",
+            "key": "Use /login <username> <password> to login",
             "value": "使用/login <用户名> <密码> 登陆"
         },
         {

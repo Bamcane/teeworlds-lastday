@@ -15,6 +15,8 @@
 #include <teeuniverses/components/localization.h>
 #include <engine/server/crypt.h>
 
+#include <string>
+
 #include "lastday/item/item.h"
 #include "lastday/item/make.h"
 enum
@@ -255,7 +257,7 @@ void CGameContext::SendMenuChat_Locazition(int To, const char* pText, ...)
 	Msg.m_Team = 0;
 	Msg.m_ClientID = -1;
 	
-	dynamic_string Buffer;
+	std::string Buffer;
 	
 	va_list VarArgs;
 	va_start(VarArgs, pText);
@@ -267,7 +269,7 @@ void CGameContext::SendMenuChat_Locazition(int To, const char* pText, ...)
 			Buffer.clear();
 			Server()->Localization()->Format_VL(Buffer, m_apPlayers[i]->GetLanguage(), pText, VarArgs);
 			
-			m_pMenu->AddMenuChat(i, Buffer.buffer());
+			m_pMenu->AddMenuChat(i, Buffer.c_str());
 		}
 	}
 	
@@ -309,7 +311,7 @@ void CGameContext::SendChatTarget_Locazition(int To, const char *pText, ...)
 	Msg.m_Team = 0;
 	Msg.m_ClientID = -1;
 	
-	dynamic_string Buffer;
+	std::string Buffer;
 	
 	va_list VarArgs;
 	va_start(VarArgs, pText);
@@ -321,7 +323,7 @@ void CGameContext::SendChatTarget_Locazition(int To, const char *pText, ...)
 			Buffer.clear();
 			Server()->Localization()->Format_VL(Buffer, m_apPlayers[i]->GetLanguage(), pText, VarArgs);
 			
-			Msg.m_pMessage = Buffer.buffer();
+			Msg.m_pMessage = Buffer.c_str();
 			Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, i);
 		}
 	}
@@ -397,7 +399,7 @@ void CGameContext::SendBroadcast_VL(const char *pText, int ClientID, ...)
 	if(ClientID >= MAX_CLIENTS)
 		return;
 	
-	dynamic_string Buffer;
+	std::string Buffer;
 	
 	va_list VarArgs;
 	va_start(VarArgs, pText);
@@ -406,7 +408,7 @@ void CGameContext::SendBroadcast_VL(const char *pText, int ClientID, ...)
 	if(ClientID < 0)
 	{
 		Server()->Localization()->Format_VL(Buffer, "en", _(pText), VarArgs);
-		Msg.m_pMessage = Buffer.buffer();
+		Msg.m_pMessage = Buffer.c_str();
 		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL|MSGFLAG_NOSEND, -1);
 	}
 
@@ -417,7 +419,7 @@ void CGameContext::SendBroadcast_VL(const char *pText, int ClientID, ...)
 			Buffer.clear();
 			Server()->Localization()->Format_VL(Buffer, m_apPlayers[i]->GetLanguage(), _(pText), VarArgs);
 			
-			Msg.m_pMessage = Buffer.buffer();
+			Msg.m_pMessage = Buffer.c_str();
 			Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, i);
 			
 		}
@@ -646,6 +648,8 @@ void CGameContext::OnClientEnter(int ClientID)
 	SendChatTarget_Locazition(ClientID, "Bind </menu> to your key");
 	SendChatTarget_Locazition(ClientID, "Show clan plate can show health bar");
 	SendChatTarget_Locazition(ClientID, "Mod wiki: %s", "wiki.teeworlds.cn/mods:lastday");
+	SendChatTarget_Locazition(ClientID, "Use /register <username> <password> to register");
+	SendChatTarget_Locazition(ClientID, "Use /login <username> <password> to login");
 
 
 	m_VoteUpdate = true;
@@ -962,6 +966,13 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			{
 				pPlayer->m_LastSetTeam = Server()->Tick();
 				SendBroadcast_VL(_("Save your hope"), ClientID);
+				return;
+			}
+
+			if(pPlayer->GetTeam() == TEAM_SPECTATORS && !pPlayer->IsLogin())
+			{
+				pPlayer->m_LastSetTeam = Server()->Tick();
+				SendBroadcast_VL("You must login before join survival", ClientID);
 				return;
 			}
 
@@ -1571,7 +1582,7 @@ void CGameContext::ConRegister(IConsole::IResult *pResult, void *pUserData)
 
 	if(pResult->NumArguments() < 2)
 	{
-		pSelf->SendChatTarget_Locazition(ClientID, "Use /register <username> <password>");
+		pSelf->SendChatTarget_Locazition(ClientID, "Use /register <username> <password> to register");
 		return;
 	}
 
@@ -1608,7 +1619,7 @@ void CGameContext::ConLogin(IConsole::IResult *pResult, void *pUserData)
 
 	if(pResult->NumArguments() < 2)
 	{
-		pSelf->SendChatTarget_Locazition(ClientID, "Use /login <username> <password>");
+		pSelf->SendChatTarget_Locazition(ClientID, "Use /login <username> <password> to login");
 		return;
 	}
 
