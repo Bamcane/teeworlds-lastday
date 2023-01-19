@@ -184,7 +184,7 @@ void CCharacter::HandleNinja()
 				if(m_NumObjectsHit < 10)
 					m_apHitObjects[m_NumObjectsHit++] = aEnts[i];
 
-				aEnts[i]->TakeDamage(vec2(0, -10.0f), g_Weapons.m_aWeapons[LD_WEAPON_NINJA]->GetDamage(), m_pPlayer->GetCID(), LD_WEAPON_NINJA);
+				aEnts[i]->TakeDamage(vec2(0, -10.0f), g_Weapons.m_aWeapons[LD_WEAPON_NINJA]->GetDamage(), GetCID(), LD_WEAPON_NINJA);
 			}
 		}
 
@@ -439,7 +439,7 @@ void CCharacter::HandleEvents()
 	// set emote
 	if (m_EmoteStop < Server()->Tick())
 	{
-		m_EmoteType = EMOTE_NORMAL;
+		m_EmoteType = m_pPlayer->GetEmote();
 		m_EmoteStop = -1;
 	}
 
@@ -472,8 +472,6 @@ void CCharacter::HandleInput()
 		m_Input.m_Direction = 0;
 		m_Input.m_Hook = 0;
 	}
-
-	SetEmote(m_pPlayer->GetEmote(), Server()->Tick());
 }
 
 void CCharacter::SyncWeapon()
@@ -686,7 +684,7 @@ void CCharacter::Die(int Killer, int Weapon)
 	m_pPlayer->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
 	int ModeSpecial = GameServer()->m_pController->OnCharacterDeath(this, GameServer()->m_apPlayers[Killer], Weapon);
 
-	if(GameServer()->m_apPlayers[Killer] && !GameServer()->m_apPlayers[Killer]->m_IsBot)
+	if(Weapon >= 0 && GameServer()->m_apPlayers[Killer] && !GameServer()->m_apPlayers[Killer]->m_IsBot)
 	{
 		char aBuf[256];
 		str_format(aBuf, sizeof(aBuf), "kill killer='%d:%s' victim='%d:%s' weapon=%d special=%d",
@@ -698,7 +696,7 @@ void CCharacter::Die(int Killer, int Weapon)
 		CNetMsg_Sv_KillMsg Msg;
 		Msg.m_Killer = Killer;
 		Msg.m_Victim = m_pPlayer->GetCID();
-		Msg.m_Weapon = Killer == GetCID() ? WEAPON_GAME : g_Weapons.m_aWeapons[m_ActiveWeapon]->GetShowType();
+		Msg.m_Weapon = g_Weapons.m_aWeapons[Weapon]->GetShowType();
 		Msg.m_ModeSpecial = ModeSpecial;
 		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
 		

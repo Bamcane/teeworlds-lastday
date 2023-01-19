@@ -600,7 +600,6 @@ void CGameController::CreatePickup(vec2 Pos, vec2 Dir, CBotData BotData)
 		{
 			int PickupNum = random_int(BotData.m_Drops[i].m_MinNum, BotData.m_Drops[i].m_MaxNum);
 			const char *pName = BotData.m_Drops[i].m_ItemName;
-			dbg_msg(pName, "%d:%d", i, PickupNum);
 			new CPickup(&GameServer()->m_World, Pos, Dir, pName, PickupNum);
 		}
 	}
